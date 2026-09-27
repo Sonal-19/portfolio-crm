@@ -1,0 +1,130 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --navy: #0f1b3d;
+  --navy-2: #1a2a5a;
+  --saffron: #f08a24;
+  --gold: #d4a64a;
+  --gold-light: #f3d58a;
+  --cream: #fbf7ef;
+
+  --background: #fbf7ef;
+  --foreground: #16213f;
+  --card: #ffffff;
+  --card-foreground: #16213f;
+  --popover: #ffffff;
+  --popover-foreground: #16213f;
+  --primary: #e07b17;
+  --primary-foreground: #ffffff;
+  --secondary: #0f1b3d;
+  --secondary-foreground: #fbf7ef;
+  --muted: #f1ebdf;
+  --muted-foreground: #6b6558;
+  --accent: #f6ecd8;
+  --accent-foreground: #7a4a10;
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --border: #e6dcc8;
+  --input: #e0d5bf;
+  --ring: #e07b17;
+  --radius: 0.75rem;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-navy: var(--navy);
+  --color-navy-2: var(--navy-2);
+  --color-saffron: var(--saffron);
+  --color-gold: var(--gold);
+  --color-gold-light: var(--gold-light);
+  --color-cream: var(--cream);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --font-sans: "Mukta", "Noto Sans Gurmukhi", system-ui, sans-serif;
+  --font-display: "Playfair Display", Georgia, serif;
+  --font-brand: "Cinzel", "Playfair Display", serif;
+  --font-gurmukhi: "Noto Sans Gurmukhi", "Mukta", sans-serif;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+  input::placeholder,
+  textarea::placeholder {
+    color: #a8a092;
+  }
+}
+
+.text-gold-gradient {
+  background: linear-gradient(
+    100deg,
+    var(--gold-light),
+    var(--gold) 45%,
+    var(--saffron)
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.bg-mandala {
+  background-image: url("/hero-bg.svg");
+  background-size: cover;
+  background-position: center;
+}
+
+.prose-sw h2 {
+  @apply mt-8 mb-3 font-display text-2xl text-navy;
+}
+.prose-sw h3 {
+  @apply mt-6 mb-2 font-display text-xl text-navy;
+}
+.prose-sw p {
+  @apply my-4 leading-relaxed;
+}
+.prose-sw ul {
+  @apply my-4 list-disc pl-6 space-y-1;
+}
+.prose-sw ol {
+  @apply my-4 list-decimal pl-6 space-y-1;
+}
+.prose-sw a {
+  @apply text-primary underline underline-offset-4;
+}
+.prose-sw strong {
+  @apply font-semibold text-navy;
+}
+.prose-sw blockquote {
+  @apply border-l-4 border-gold pl-4 italic text-muted-foreground;
+}
