@@ -9,3 +9,4 @@ apps/api/uploads/*
 !apps/api/uploads/.gitkeep
 apps/api/drizzle/migrations/
 apps/web/src/routeTree.gen.ts
+server.js
