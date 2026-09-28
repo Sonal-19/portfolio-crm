@@ -6,6 +6,7 @@ import {
   CalendarDays,
   Check,
   CheckCircle2,
+  ChevronDown,
   Clock,
   HandHeart,
   Mic2,
@@ -19,6 +20,13 @@ import { Field } from "@/components/common/field";
 import { Spinner } from "@/components/common/states";
 import { studioCatalogQuery } from "@/components/landing/studio-section";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useSiteSettings } from "@/hooks/use-site-settings";
@@ -46,8 +54,6 @@ const toMin = (hhmm: string) => {
   return h * 60 + m;
 };
 
-const selectCls =
-  "h-10 w-full rounded-md border border-input bg-white px-3 text-sm shadow-xs outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50";
 
 export function BookingWizard({
   initialPackage,
@@ -353,36 +359,97 @@ export function BookingWizard({
             <div className="grid gap-4 sm:grid-cols-2">
               {isCustom && (
                 <Field label="Duration" htmlFor="duration">
-                  <select
-                    id="duration"
-                    className={selectCls}
-                    value={customHours}
-                    onChange={(e) => setCustomHours(Number(e.target.value))}
-                  >
-                    {[1, 2, 3, 4, 5, 6, 8].map((h) => (
-                      <option key={h} value={h}>
-                        {h} hour{h > 1 ? "s" : ""}
-                      </option>
-                    ))}
-                  </select>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        type="button"
+                        id="duration"
+                        className="flex h-11 w-full items-center justify-between rounded-xl border border-border bg-white px-3.5 text-sm text-navy shadow-xs transition-all duration-200 hover:border-gold/70 hover:bg-accent/15 focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/20 outline-none cursor-pointer"
+                      >
+                        <span className="flex items-center gap-2.5">
+                          <Clock className="size-4 text-primary" />
+                          <span className="font-medium text-navy">
+                            {customHours} hour{customHours > 1 ? "s" : ""}
+                          </span>
+                        </span>
+                        <ChevronDown className="size-4 text-gold opacity-75 shrink-0 transition-transform duration-200" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                      align="start"
+                      className="w-[var(--radix-dropdown-menu-trigger-width)] min-w-[200px]"
+                    >
+                      <DropdownMenuRadioGroup
+                        value={String(customHours)}
+                        onValueChange={(v) => setCustomHours(Number(v))}
+                      >
+                        {[1, 2, 3, 4, 5, 6, 8].map((h) => (
+                          <DropdownMenuRadioItem
+                            key={h}
+                            value={String(h)}
+                            className="flex items-center gap-2.5 cursor-pointer"
+                          >
+                            <Clock className="size-4 text-primary" />
+                            <span>
+                              {h} hour{h > 1 ? "s" : ""}
+                            </span>
+                          </DropdownMenuRadioItem>
+                        ))}
+                      </DropdownMenuRadioGroup>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </Field>
               )}
               <Field label="Sound engineer" htmlFor="engineer">
-                <select
-                  id="engineer"
-                  className={selectCls}
-                  value={engineerId}
-                  onChange={(e) =>
-                    setEngineerId(e.target.value ? Number(e.target.value) : "")
-                  }
-                >
-                  <option value="">No preference</option>
-                  {catalog.engineers.map((e) => (
-                    <option key={e.id} value={e.id}>
-                      {e.name}
-                    </option>
-                  ))}
-                </select>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      type="button"
+                      id="engineer"
+                      className="flex h-11 w-full items-center justify-between rounded-xl border border-border bg-white px-3.5 text-sm text-navy shadow-xs transition-all duration-200 hover:border-gold/70 hover:bg-accent/15 focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/20 outline-none cursor-pointer"
+                    >
+                      <span className="flex items-center gap-2.5 truncate">
+                        <User className="size-4 text-primary shrink-0" />
+                        <span className="truncate font-medium text-navy">
+                          {engineerId
+                            ? (catalog.engineers.find((e) => e.id === engineerId)?.name ?? "Selected engineer")
+                            : "No preference (Any available)"}
+                        </span>
+                      </span>
+                      <ChevronDown className="size-4 text-gold opacity-75 shrink-0 transition-transform duration-200" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="start"
+                    className="w-[var(--radix-dropdown-menu-trigger-width)] min-w-[240px]"
+                  >
+                    <DropdownMenuRadioGroup
+                      value={engineerId ? String(engineerId) : "none"}
+                      onValueChange={(v) =>
+                        setEngineerId(v === "none" ? "" : Number(v))
+                      }
+                    >
+                      <DropdownMenuRadioItem value="none" className="cursor-pointer">
+                        <span className="flex items-center gap-2.5">
+                          <User className="size-4 text-muted-foreground" />
+                          <span>No preference (Any available)</span>
+                        </span>
+                      </DropdownMenuRadioItem>
+                      {catalog.engineers.map((e) => (
+                        <DropdownMenuRadioItem
+                          key={e.id}
+                          value={String(e.id)}
+                          className="cursor-pointer"
+                        >
+                          <span className="flex items-center gap-2.5">
+                            <User className="size-4 text-primary" />
+                            <span className="font-medium text-navy">{e.name}</span>
+                          </span>
+                        </DropdownMenuRadioItem>
+                      ))}
+                    </DropdownMenuRadioGroup>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </Field>
             </div>
             {isCustom && (
@@ -533,7 +600,8 @@ export function BookingWizard({
                   onChange={(e) =>
                     setPerson({ ...person, phone: e.target.value })
                   }
-                  maxLength={20}
+                  maxLength={10}
+                  minLength={10}
                 />
               </Field>
               <Field label="Email" htmlFor="bemail">
@@ -556,23 +624,40 @@ export function BookingWizard({
                 />
               </Field>
               <Field label="You are a" htmlFor="btype">
-                <select
-                  id="btype"
-                  className={selectCls}
-                  value={person.artistType}
-                  onChange={(e) =>
-                    setPerson({
-                      ...person,
-                      artistType: e.target.value as ArtistType,
-                    })
-                  }
-                >
-                  {ARTIST_TYPES.map(([v, l]) => (
-                    <option key={v} value={v}>
-                      {l}
-                    </option>
-                  ))}
-                </select>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      type="button"
+                      id="btype"
+                      className="flex h-11 w-full items-center justify-between rounded-xl border border-border bg-white px-3.5 text-sm text-navy shadow-xs transition-all duration-200 hover:border-gold/70 hover:bg-accent/15 focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/20 outline-none cursor-pointer"
+                    >
+                      <span className="font-medium text-navy">
+                        {ARTIST_TYPES.find(([v]) => v === person.artistType)?.[1] ?? "Select artist type"}
+                      </span>
+                      <ChevronDown className="size-4 text-gold opacity-75 shrink-0 transition-transform duration-200" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="start"
+                    className="w-[var(--radix-dropdown-menu-trigger-width)] min-w-[200px]"
+                  >
+                    <DropdownMenuRadioGroup
+                      value={person.artistType}
+                      onValueChange={(v) =>
+                        setPerson({
+                          ...person,
+                          artistType: v as ArtistType,
+                        })
+                      }
+                    >
+                      {ARTIST_TYPES.map(([v, l]) => (
+                        <DropdownMenuRadioItem key={v} value={v} className="cursor-pointer">
+                          {l}
+                        </DropdownMenuRadioItem>
+                      ))}
+                    </DropdownMenuRadioGroup>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </Field>
               <Field label="Experience" htmlFor="bexp">
                 <Input
