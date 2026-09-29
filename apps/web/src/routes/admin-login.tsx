@@ -1,6 +1,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, Eye, EyeOff, Lock, LogIn } from "lucide-react";
+import {
+  ArrowLeft,
+  Eye,
+  EyeOff,
+  Lock,
+  LogIn,
+} from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Field } from "@/components/common/field";
@@ -11,6 +17,10 @@ import { Input } from "@/components/ui/input";
 import { authQueryOptions } from "@/hooks/use-auth";
 import { api, call } from "@/lib/api";
 import { useAuthStore } from "@/stores/auth-store";
+
+// Credentials configured in apps/api/src/db/seed/index.ts
+const SEED_ADMIN_EMAIL = "admin@shimlawale.com";
+const SEED_ADMIN_PASSWORD = "ChangeMe123!";
 
 export const Route = createFileRoute("/admin-login")({
   component: AdminLogin,
@@ -23,6 +33,14 @@ function AdminLogin() {
   const qc = useQueryClient();
   const navigate = useNavigate();
   const setUser = useAuthStore((s) => s.setUser);
+
+  const fillTestCredentials = () => {
+    setEmail(SEED_ADMIN_EMAIL);
+    setPassword(SEED_ADMIN_PASSWORD);
+    toast.info("Filled test admin credentials", {
+      description: SEED_ADMIN_EMAIL,
+    });
+  };
 
   const login = useMutation({
     mutationFn: () => call(api.auth.login.post({ email, password })),
@@ -57,6 +75,7 @@ function AdminLogin() {
               Sign in to manage leads, bookings & content.
             </p>
           </div>
+
           <Field label="Email" htmlFor="email">
             <Input
               id="email"
@@ -99,6 +118,15 @@ function AdminLogin() {
           >
             {login.isPending ? <Spinner className="text-white" /> : <LogIn />}{" "}
             Sign in
+          </Button>
+
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={fillTestCredentials}
+            className="h-8 border-0 bg-white px-3 text-xs font-semibold text-primary underline cursor-pointer"
+          >
+            Auto-fill
           </Button>
         </form>
         <Link
