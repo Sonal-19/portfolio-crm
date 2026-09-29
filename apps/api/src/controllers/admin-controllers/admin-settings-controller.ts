@@ -1,12 +1,16 @@
 import { eq } from "drizzle-orm";
 import Elysia, { t } from "elysia";
 import { db } from "$/db";
-import { adminsTable, siteSettingsTable } from "$/db/schema";
+import {
+  adminsTable,
+  siteSettingsTable,
+  studioGalleryIcons,
+} from "$/db/schema";
 import {
   storageService,
   type UploadFolder,
 } from "$/lib/services/storage-service";
-import { fail, ok } from "$/lib/utils";
+import { fail, ok, youtubeId } from "$/lib/utils";
 import { tEnum } from "$/lib/utils/schema";
 import { protectedAdmin } from "$/pre-processor";
 
@@ -22,7 +26,13 @@ export const adminSettingsController = new Elysia({
   })
   .patch(
     "/settings",
-    async ({ body }) => {
+    async ({ body, status }) => {
+      if (body.heroTrackUrl && !youtubeId(body.heroTrackUrl)) {
+        return status(
+          400,
+          fail("Hero music must be a YouTube or YouTube Music link"),
+        );
+      }
       const [row] = await db
         .update(siteSettingsTable)
         .set(body)
@@ -37,7 +47,20 @@ export const adminSettingsController = new Elysia({
         bio: t.Optional(t.String()),
         heroImagePath: nullableStr,
         aboutImagePath: nullableStr,
-        studioImagePath: nullableStr,
+        studioGallery: t.Optional(
+          t.Array(
+            t.Object({
+              imagePath: t.String({ minLength: 1 }),
+              title: t.String({ maxLength: 80 }),
+              description: t.String({ maxLength: 240 }),
+              icon: tEnum(studioGalleryIcons),
+            }),
+            { maxItems: 12 },
+          ),
+        ),
+        heroTrackUrl: nullableStr,
+        heroTrackTitle: nullableStr,
+        heroTrackSubtitle: nullableStr,
         studioIntro: t.Optional(t.String()),
         studioAddress: t.Optional(t.String()),
         mapEmbedUrl: nullableStr,

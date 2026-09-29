@@ -2,10 +2,12 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import {
   CalendarCheck,
+  Camera,
   CheckCircle2,
   Clock,
   Disc3,
   HandHeart,
+  Headphones,
   Mic2,
   ScrollText,
   SlidersHorizontal,
@@ -54,29 +56,19 @@ const STEPS = [
   },
 ];
 
-const FACILITIES = [
-  {
-    src: "/uploads/studio/studio-console.jpg",
-    label: "Mixing & mastering suite",
-    desc: "Multi-channel analog console, studio monitors & acoustic diffuser panels.",
-    Icon: SlidersHorizontal,
-  },
-  {
-    src: "/uploads/studio/mic-booth.jpg",
-    label: "Acoustically treated vocal booth",
-    desc: "Gold studio condenser microphones, wooden slats & dedicated monitoring.",
-    Icon: Mic2,
-  },
-  {
-    src: "/uploads/studio/video-shoot.jpg",
-    label: "Music-video set & lighting",
-    desc: "4K cinema multi-cam setup, softbox lighting & performance staging.",
-    Icon: Video,
-  },
-];
+/** Icons the admin can pick for each studio photo (Settings → Studio photos). */
+export const GALLERY_ICONS = {
+  sliders: SlidersHorizontal,
+  mic: Mic2,
+  video: Video,
+  disc: Disc3,
+  headphones: Headphones,
+  camera: Camera,
+} as const;
 
 export function StudioSection({ s }: { s?: SiteSettings }) {
   const { data } = useQuery(studioCatalogQuery);
+  const gallery = s?.studioGallery ?? [];
 
   return (
     <section
@@ -216,61 +208,70 @@ export function StudioSection({ s }: { s?: SiteSettings }) {
           </Button>
         </div>
 
-        {/* Facilities Showcase */}
-        <div className="mt-16 sm:mt-20">
-          <div className="mb-8 flex flex-col items-center text-center">
-            <span className="text-xs font-semibold uppercase tracking-widest text-primary">
-              Inside Our Studio · Ghanta Ghar, Ludhiana
-            </span>
-            <h3 className="mt-1.5 font-display text-2xl font-bold text-navy sm:text-3xl">
-              World-Class Studio Facilities
-            </h3>
-            <p className="mt-2 max-w-xl text-sm text-muted-foreground">
-              Equipped with broadcast-grade acoustics, industry-standard analog & digital gear, and high-definition video production.
-            </p>
+        {/* Facilities Showcase (photos managed in Admin → Settings) */}
+        {gallery.length > 0 && (
+          <div className="mt-16 sm:mt-20">
+            <div className="mb-8 flex flex-col items-center text-center">
+              <span className="text-xs font-semibold uppercase tracking-widest text-primary">
+                Inside Our Studio · Ghanta Ghar, Ludhiana
+              </span>
+              <h3 className="mt-1.5 font-display text-2xl font-bold text-navy sm:text-3xl">
+                World-Class Studio Facilities
+              </h3>
+              <p className="mt-2 max-w-xl text-sm text-muted-foreground">
+                Equipped with broadcast-grade acoustics, industry-standard
+                analog & digital gear, and high-definition video production.
+              </p>
+            </div>
+
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {gallery.map((f, i) => {
+                const Icon = GALLERY_ICONS[f.icon] ?? Mic2;
+                return (
+                  <motion.figure
+                    key={`${f.imagePath}-${i}`}
+                    whileHover={{ y: -5 }}
+                    transition={{ duration: 0.25 }}
+                    className={cn(
+                      "group relative overflow-hidden rounded-2xl border border-navy/10 bg-navy shadow-md transition-all duration-300 hover:border-gold/50 hover:shadow-xl",
+                      // Odd last card spans the full row on 2-column tablets
+                      gallery.length % 2 === 1 &&
+                        i === gallery.length - 1 &&
+                        "sm:col-span-2 lg:col-span-1",
+                    )}
+                  >
+                    <div className="relative aspect-[16/10] w-full overflow-hidden bg-navy-2">
+                      <img
+                        src={f.imagePath}
+                        alt={f.title}
+                        loading="lazy"
+                        className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-navy via-navy/20 to-transparent opacity-80 transition-opacity group-hover:opacity-60" />
+
+                      {/* Floating Icon Badge */}
+                      <div className="absolute top-3 right-3 flex size-9 items-center justify-center rounded-full border border-gold/30 bg-navy/80 text-gold-light shadow-md backdrop-blur-md">
+                        <Icon className="size-4" />
+                      </div>
+                    </div>
+
+                    <figcaption className="p-4 sm:p-5">
+                      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-gold-light">
+                        <span>Facility {String(i + 1).padStart(2, "0")}</span>
+                      </div>
+                      <h4 className="mt-1 font-display text-lg font-bold text-cream">
+                        {f.title}
+                      </h4>
+                      <p className="mt-1 text-xs text-cream/70 sm:text-sm leading-relaxed">
+                        {f.description}
+                      </p>
+                    </figcaption>
+                  </motion.figure>
+                );
+              })}
+            </div>
           </div>
-
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {FACILITIES.map((f, i) => (
-              <motion.figure
-                key={f.label}
-                whileHover={{ y: -5 }}
-                transition={{ duration: 0.25 }}
-                className={cn(
-                  "group relative overflow-hidden rounded-2xl border border-navy/10 bg-navy shadow-md transition-all duration-300 hover:border-gold/50 hover:shadow-xl",
-                  i === 2 && "sm:col-span-2 lg:col-span-1"
-                )}
-              >
-                <div className="relative aspect-[16/10] w-full overflow-hidden bg-navy-2">
-                  <img
-                    src={f.src}
-                    alt={f.label}
-                    loading="lazy"
-                    className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-navy via-navy/20 to-transparent opacity-80 transition-opacity group-hover:opacity-60" />
-
-                  {/* Floating Icon Badge */}
-                  <div className="absolute top-3 right-3 flex size-9 items-center justify-center rounded-full border border-gold/30 bg-navy/80 text-gold-light shadow-md backdrop-blur-md">
-                    <f.Icon className="size-4" />
-                  </div>
-                </div>
-
-                <figcaption className="p-4 sm:p-5">
-                  <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-gold-light">
-                    <span>Facility 0{i + 1}</span>
-                  </div>
-                  <h4 className="mt-1 font-display text-lg font-bold text-cream">
-                    {f.label}
-                  </h4>
-                  <p className="mt-1 text-xs text-cream/70 sm:text-sm leading-relaxed">
-                    {f.desc}
-                  </p>
-                </figcaption>
-              </motion.figure>
-            ))}
-          </div>
-        </div>
+        )}
       </div>
     </section>
   );

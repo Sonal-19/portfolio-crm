@@ -1,5 +1,23 @@
 import { pgTable } from "drizzle-orm/pg-core";
 
+export const studioGalleryIcons = [
+  "sliders",
+  "mic",
+  "video",
+  "disc",
+  "headphones",
+  "camera",
+] as const;
+export type StudioGalleryIcon = (typeof studioGalleryIcons)[number];
+
+/** One photo card in the landing page's "Inside our studio" gallery. */
+export type StudioGalleryItem = {
+  imagePath: string;
+  title: string;
+  description: string;
+  icon: StudioGalleryIcon;
+};
+
 export type SiteStats = {
   followers: string;
   views: string;
@@ -16,7 +34,17 @@ export const siteSettingsTable = pgTable("site_settings", (pg) => ({
   bio: pg.text().notNull(),
   heroImagePath: pg.text("hero_image_path"),
   aboutImagePath: pg.text("about_image_path"),
-  studioImagePath: pg.text("studio_image_path"),
+  /** Studio photos shown on the landing page, in display order. */
+  studioGallery: pg
+    .jsonb("studio_gallery")
+    .$type<StudioGalleryItem[]>()
+    .notNull()
+    .default([]),
+  /** YouTube track the hero's music card plays (any YouTube / YT Music URL). */
+  heroTrackUrl: pg.text("hero_track_url"),
+  heroTrackTitle: pg.text("hero_track_title"),
+  /** Small line under the title, e.g. "66 Lakh+ views". */
+  heroTrackSubtitle: pg.text("hero_track_subtitle"),
   studioIntro: pg.text("studio_intro").notNull(),
   studioAddress: pg.text("studio_address").notNull(),
   mapEmbedUrl: pg.text("map_embed_url"),
@@ -32,7 +60,7 @@ export const siteSettingsTable = pgTable("site_settings", (pg) => ({
   whatsappChannelUrl: pg.text("whatsapp_channel_url"),
   stats: pg.jsonb().$type<SiteStats>().notNull(),
   updatedAt: pg
-    .timestamp("updated_at")
+    .timestamp("updated_at", { withTimezone: true })
     .defaultNow()
     .notNull()
     .$onUpdate(() => new Date()),

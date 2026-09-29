@@ -35,3 +35,25 @@ export function csvEscape(value: unknown): string {
   const s = Array.isArray(value) ? value.join("; ") : String(value);
   return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }
+
+/**
+ * Extracts the 11-char video id from any common YouTube / YouTube Music URL
+ * (watch?v=, youtu.be/, /shorts/, /embed/, /live/) or a bare id.
+ */
+export function youtubeId(input: string | null | undefined): string | null {
+  if (!input) return null;
+  const s = input.trim();
+  if (/^[\w-]{11}$/.test(s)) return s;
+  try {
+    const url = new URL(s);
+    const host = url.hostname.replace(/^(www\.|m\.|music\.)/, "");
+    if (host === "youtu.be") return url.pathname.slice(1, 12) || null;
+    if (host !== "youtube.com" && host !== "youtube-nocookie.com") return null;
+    const v = url.searchParams.get("v");
+    if (v && /^[\w-]{11}$/.test(v)) return v;
+    const m = url.pathname.match(/^\/(?:shorts|embed|live|v)\/([\w-]{11})/);
+    return m?.[1] ?? null;
+  } catch {
+    return null;
+  }
+}

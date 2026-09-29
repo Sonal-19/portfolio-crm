@@ -1,3 +1,4 @@
+import { youtubeId } from "@api/lib/utils";
 import { Link } from "@tanstack/react-router";
 import {
   Disc3,
@@ -52,9 +53,6 @@ declare global {
     onYouTubeIframeAPIReady?: () => void;
   }
 }
-
-const YOUTUBE_VIDEO_ID = "bFoQyydNFLw";
-const YOUTUBE_VIDEO_URL = "https://www.youtube.com/watch?v=bFoQyydNFLw";
 
 const goldenParticles = [
   { top: "14%", left: "10%", size: 3.5, delay: 0, duration: 7 },
@@ -148,7 +146,15 @@ export function HeroSection({ s }: { s?: SiteSettings }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const isPlayingRef = useRef(false);
   const playerRef = useRef<YouTubePlayerInstance | null>(null);
-  const iframeRef = useRef<HTMLIFrameElement | null>(null);
+  const playerHostRef = useRef<HTMLDivElement | null>(null);
+
+  // Track chosen by the admin (Settings → Hero music).
+  const videoId = youtubeId(s?.heroTrackUrl);
+  const trackTitle = s?.heroTrackTitle || "Listen now";
+  const trackSubtitle = s?.heroTrackSubtitle;
+  const trackUrl = videoId
+    ? `https://www.youtube.com/watch?v=${videoId}`
+    : null;
 
   // Smooth mouse-following luxury golden spotlight for desktop
   const mouseX = useMotionValue(55);
@@ -157,24 +163,30 @@ export function HeroSection({ s }: { s?: SiteSettings }) {
   const springY = useSpring(mouseY, { stiffness: 90, damping: 25 });
   const mouseGlow = useMotionTemplate`radial-gradient(750px circle at ${springX}% ${springY}%, rgba(240, 138, 36, 0.14), rgba(212, 166, 74, 0.06) 40%, transparent 75%)`;
 
+  // (Re)create the hidden YouTube player whenever the admin changes the track.
+  // The YT API replaces its target node with an iframe, so the target is
+  // created imperatively inside a React-owned host div.
   useEffect(() => {
+    const host = playerHostRef.current;
+    if (!videoId || !host) return;
     let isMounted = true;
+    setIsPlaying(false);
+    isPlayingRef.current = false;
 
     const createPlayer = () => {
-      if (!isMounted || !window.YT?.Player) return;
-      const targetEl = document.getElementById("hero-yt-player-target");
-      if (!targetEl || playerRef.current) return;
-
+      if (!isMounted || !window.YT?.Player || playerRef.current) return;
+      const target = document.createElement("div");
+      host.appendChild(target);
       try {
-        playerRef.current = new window.YT.Player("hero-yt-player-target", {
-          videoId: YOUTUBE_VIDEO_ID,
+        playerRef.current = new window.YT.Player(target, {
+          videoId,
           playerVars: {
             autoplay: 0,
             controls: 0,
             disablekb: 1,
             fs: 0,
             loop: 1,
-            playlist: YOUTUBE_VIDEO_ID,
+            playlist: videoId,
             modestbranding: 1,
             rel: 0,
             playsinline: 1,
@@ -201,10 +213,8 @@ export function HeroSection({ s }: { s?: SiteSettings }) {
               } else if (event.data === 2) {
                 setIsPlaying(false);
                 isPlayingRef.current = false;
-              } else if (event.data === 0) {
-                if (isPlayingRef.current) {
-                  event.target.playVideo();
-                }
+              } else if (event.data === 0 && isPlayingRef.current) {
+                event.target.playVideo();
               }
             },
           },
@@ -234,10 +244,11 @@ export function HeroSection({ s }: { s?: SiteSettings }) {
       isMounted = false;
       try {
         playerRef.current?.destroy();
-        playerRef.current = null;
       } catch {}
+      playerRef.current = null;
+      host.replaceChildren();
     };
-  }, []);
+  }, [videoId]);
 
   const handleTogglePlay = (e?: React.MouseEvent) => {
     e?.preventDefault();
@@ -247,44 +258,16 @@ export function HeroSection({ s }: { s?: SiteSettings }) {
     setIsPlaying(nextState);
     isPlayingRef.current = nextState;
 
-    if (playerRef.current) {
-      try {
-        if (nextState) {
-          playerRef.current.unMute();
-          playerRef.current.setVolume(100);
-          playerRef.current.playVideo();
-        } else {
-          playerRef.current.pauseVideo();
-        }
-      } catch {}
-    } else {
-      const targetIframe =
-        iframeRef.current ??
-        (document.getElementById(
-          "hero-yt-player-target",
-        ) as HTMLIFrameElement | null);
-      if (targetIframe?.contentWindow) {
-        const func = nextState ? "playVideo" : "pauseVideo";
-        targetIframe.contentWindow.postMessage(
-          JSON.stringify({ event: "command", func, args: "" }),
-          "*",
-        );
-        if (nextState) {
-          targetIframe.contentWindow.postMessage(
-            JSON.stringify({ event: "command", func: "unMute", args: "" }),
-            "*",
-          );
-          targetIframe.contentWindow.postMessage(
-            JSON.stringify({
-              event: "command",
-              func: "setVolume",
-              args: [100],
-            }),
-            "*",
-          );
-        }
+    // If the YT API is still loading, onReady picks up isPlayingRef.
+    try {
+      if (nextState) {
+        playerRef.current?.unMute();
+        playerRef.current?.setVolume(100);
+        playerRef.current?.playVideo();
+      } else {
+        playerRef.current?.pauseVideo();
       }
-    }
+    } catch {}
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
@@ -686,153 +669,133 @@ export function HeroSection({ s }: { s?: SiteSettings }) {
             <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 sm:h-32 bg-gradient-to-t from-[#070b18] via-[#070b18]/70 to-transparent z-20" />
           </div>
 
-          {/* Floating Glass Music Track Card */}
-          <motion.div
-            onClick={() => handleTogglePlay()}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                handleTogglePlay();
+          {/* Floating Glass Music Track Card (track set in Admin → Settings) */}
+          {videoId && (
+            <motion.div
+              onClick={() => handleTogglePlay()}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  handleTogglePlay();
+                }
+              }}
+              role="button"
+              tabIndex={0}
+              title={
+                isPlaying ? `Pause '${trackTitle}'` : `Play '${trackTitle}'`
               }
-            }}
-            role="button"
-            tabIndex={0}
-            title={
-              isPlaying
-                ? "Pause 'Satgur Tumre Kaaj Saware'"
-                : "Play 'Satgur Tumre Kaaj Saware'"
-            }
-            whileHover={{ y: -3, scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            transition={{ type: "spring", stiffness: 350, damping: 25 }}
-            className="group relative z-30 -mt-8 sm:-mt-10 flex w-full max-w-[340px] sm:max-w-[420px] items-center justify-between gap-3 rounded-2xl border border-gold/35 bg-[#070b18]/95 p-3 sm:p-3.5 shadow-[0_15px_35px_rgba(0,0,0,0.75)] backdrop-blur-xl transition-all duration-300 hover:border-gold hover:shadow-[0_0_25px_rgba(212,166,74,0.25)] cursor-pointer select-none"
-          >
-            <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-              {/* Dedicated & Distinct Play / Pause Music Button */}
-              <button
-                type="button"
-                onClick={handleTogglePlay}
-                aria-label={
-                  isPlaying ? "Pause website music" : "Play music on website"
-                }
-                title={
-                  isPlaying ? "Pause website music" : "Play music on website"
-                }
-                className="relative flex size-10 sm:size-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-gold via-saffron to-gold-dark text-navy font-bold shadow-lg shadow-gold/25 transition-all duration-200 hover:scale-110 hover:shadow-gold/40 active:scale-95 cursor-pointer z-10"
-              >
-                {isPlaying ? (
-                  <Pause className="size-5 fill-navy text-navy transition-transform duration-200" />
-                ) : (
-                  <Play className="size-5 fill-navy text-navy ml-0.5 transition-transform duration-200" />
-                )}
-              </button>
-
-              <div className="min-w-0 text-left">
-                <p className="truncate text-xs sm:text-sm font-semibold text-cream font-display group-hover:text-gold-light transition-colors">
-                  Satgur Tumre Kaaj Saware
-                </p>
-                <div className="truncate text-[10px] sm:text-xs flex items-center gap-1.5 mt-0.5">
+              whileHover={{ y: -3, scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              transition={{ type: "spring", stiffness: 350, damping: 25 }}
+              className="group relative z-30 -mt-8 sm:-mt-10 flex w-full max-w-[340px] sm:max-w-[420px] items-center justify-between gap-3 rounded-2xl border border-gold/35 bg-[#070b18]/95 p-3 sm:p-3.5 shadow-[0_15px_35px_rgba(0,0,0,0.75)] backdrop-blur-xl transition-all duration-300 hover:border-gold hover:shadow-[0_0_25px_rgba(212,166,74,0.25)] cursor-pointer select-none"
+            >
+              <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                {/* Dedicated & Distinct Play / Pause Music Button */}
+                <button
+                  type="button"
+                  onClick={handleTogglePlay}
+                  aria-label={
+                    isPlaying ? "Pause website music" : "Play music on website"
+                  }
+                  title={
+                    isPlaying ? "Pause website music" : "Play music on website"
+                  }
+                  className="relative flex size-10 sm:size-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-gold via-saffron to-gold-dark text-navy font-bold shadow-lg shadow-gold/25 transition-all duration-200 hover:scale-110 hover:shadow-gold/40 active:scale-95 cursor-pointer z-10"
+                >
                   {isPlaying ? (
-                    <span className="inline-flex items-center gap-1 text-emerald-400 font-medium">
-                      <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                      <span>Playing now</span>
-                    </span>
+                    <Pause className="size-5 fill-navy text-navy transition-transform duration-200" />
                   ) : (
-                    <span className="inline-flex items-center gap-1 text-gold-light/80">
-                      <Volume2 className="size-3 shrink-0" />
-                      <span>Click to play</span>
-                    </span>
+                    <Play className="size-5 fill-navy text-navy ml-0.5 transition-transform duration-200" />
                   )}
-                  <span className="text-white/30">·</span>
-                  <span className="text-cream/60">66 Lakh+ views</span>
+                </button>
+
+                <div className="min-w-0 text-left">
+                  <p className="truncate text-xs sm:text-sm font-semibold text-cream font-display group-hover:text-gold-light transition-colors">
+                    {trackTitle}
+                  </p>
+                  <div className="truncate text-[10px] sm:text-xs flex items-center gap-1.5 mt-0.5">
+                    {isPlaying ? (
+                      <span className="inline-flex items-center gap-1 text-emerald-400 font-medium">
+                        <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                        <span>Playing now</span>
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-gold-light/80">
+                        <Volume2 className="size-3 shrink-0" />
+                        <span>Click to play</span>
+                      </span>
+                    )}
+                    {trackSubtitle && (
+                      <>
+                        <span className="text-white/30">·</span>
+                        <span className="text-cream/60">{trackSubtitle}</span>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Right Side: Soundwave Equalizer + YouTube Link Pill */}
-            <div className="flex items-center gap-2 sm:gap-2.5 shrink-0 pr-1">
-              {/* Soundwave Frequency Equalizer */}
-              <div
-                className="flex items-center gap-0.5 shrink-0"
-                aria-hidden="true"
-              >
-                {equalizerBars.map((b, idx) => (
-                  <motion.span
-                    key={idx}
-                    animate={isPlaying ? { height: b.h } : { height: "4px" }}
-                    transition={
-                      isPlaying
-                        ? {
-                            duration: b.d,
-                            repeat: Number.POSITIVE_INFINITY,
-                            ease: "easeInOut",
-                            delay: b.delay,
-                          }
-                        : { duration: 0.3 }
-                    }
-                    className={`w-[2px] sm:w-[2.5px] rounded-full inline-block transition-all duration-300 ${
-                      isPlaying
-                        ? idx % 2 === 0
-                          ? "bg-gold"
-                          : "bg-saffron"
-                        : "bg-white/20"
-                    }`}
-                  />
-                ))}
-              </div>
+              {/* Right Side: Soundwave Equalizer + YouTube Link Pill */}
+              <div className="flex items-center gap-2 sm:gap-2.5 shrink-0 pr-1">
+                {/* Soundwave Frequency Equalizer */}
+                <div
+                  className="flex items-center gap-0.5 shrink-0"
+                  aria-hidden="true"
+                >
+                  {equalizerBars.map((b, idx) => (
+                    <motion.span
+                      key={idx}
+                      animate={isPlaying ? { height: b.h } : { height: "4px" }}
+                      transition={
+                        isPlaying
+                          ? {
+                              duration: b.d,
+                              repeat: Number.POSITIVE_INFINITY,
+                              ease: "easeInOut",
+                              delay: b.delay,
+                            }
+                          : { duration: 0.3 }
+                      }
+                      className={`w-[2px] sm:w-[2.5px] rounded-full inline-block transition-all duration-300 ${
+                        isPlaying
+                          ? idx % 2 === 0
+                            ? "bg-gold"
+                            : "bg-saffron"
+                          : "bg-white/20"
+                      }`}
+                    />
+                  ))}
+                </div>
 
-              {/* YouTube external badge */}
-              <a
-                href={YOUTUBE_VIDEO_URL}
-                target="_blank"
-                rel="noreferrer"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (playerRef.current) {
+                {/* YouTube external badge */}
+                <a
+                  href={trackUrl ?? undefined}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={(e) => {
+                    e.stopPropagation();
                     try {
-                      playerRef.current.pauseVideo();
+                      playerRef.current?.pauseVideo();
                     } catch {}
-                  } else {
-                    const targetIframe =
-                      iframeRef.current ??
-                      (document.getElementById(
-                        "hero-yt-player-target",
-                      ) as HTMLIFrameElement | null);
-                    targetIframe?.contentWindow?.postMessage(
-                      JSON.stringify({
-                        event: "command",
-                        func: "pauseVideo",
-                        args: "",
-                      }),
-                      "*",
-                    );
-                  }
-                  setIsPlaying(false);
-                  isPlayingRef.current = false;
-                }}
-                className="inline-flex items-center gap-1 rounded-full bg-red-600/20 border border-red-500/40 px-2 py-0.5 text-[10px] sm:text-[11px] font-semibold text-red-300 group-hover:bg-red-600 group-hover:text-white transition-colors duration-200"
-                title="Open on YouTube"
-              >
-                <FaYoutube className="size-3.5 text-red-500 group-hover:text-white transition-colors" />
-                <ExternalLink className="size-2.5 opacity-70 group-hover:opacity-100" />
-              </a>
-            </div>
-          </motion.div>
+                    setIsPlaying(false);
+                    isPlayingRef.current = false;
+                  }}
+                  className="inline-flex items-center gap-1 rounded-full bg-red-600/20 border border-red-500/40 px-2 py-0.5 text-[10px] sm:text-[11px] font-semibold text-red-300 group-hover:bg-red-600 group-hover:text-white transition-colors duration-200"
+                  title="Open on YouTube"
+                >
+                  <FaYoutube className="size-3.5 text-red-500 group-hover:text-white transition-colors" />
+                  <ExternalLink className="size-2.5 opacity-70 group-hover:opacity-100" />
+                </a>
+              </div>
+            </motion.div>
+          )}
 
           {/* Hidden Background YouTube Player (1px fixed, active layout to avoid browser throttling) */}
           <div
-            className="pointer-events-none fixed -bottom-32 -right-32 size-px opacity-0 overflow-hidden"
+            ref={playerHostRef}
+            className="pointer-events-none fixed -bottom-32 -right-32 size-px opacity-0 overflow-hidden [&_iframe]:size-full"
             aria-hidden="true"
-          >
-            <iframe
-              id="hero-yt-player-target"
-              ref={iframeRef}
-              src={`https://www.youtube.com/embed/${YOUTUBE_VIDEO_ID}?enablejsapi=1&autoplay=0&loop=1&playlist=${YOUTUBE_VIDEO_ID}&playsinline=1`}
-              title="Satgur Tumre Kaaj Saware"
-              allow="autoplay; encrypted-media"
-              className="size-full border-0"
-            />
-          </div>
+          />
         </motion.div>
       </div>
 

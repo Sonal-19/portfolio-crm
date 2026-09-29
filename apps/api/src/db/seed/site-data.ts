@@ -13,7 +13,32 @@ export const siteSettingsSeed: InsertSiteSettings = {
   ].join("\n"),
   heroImagePath: "/uploads/brand/portrait-placeholder.svg",
   aboutImagePath: "/uploads/brand/about-placeholder.svg",
-  studioImagePath: "/uploads/studio/studio-console.svg",
+  studioGallery: [
+    {
+      imagePath: "/uploads/studio/studio-console.jpg",
+      title: "Mixing & mastering suite",
+      description:
+        "Multi-channel analog console, studio monitors & acoustic diffuser panels.",
+      icon: "sliders",
+    },
+    {
+      imagePath: "/uploads/studio/mic-booth.jpg",
+      title: "Acoustically treated vocal booth",
+      description:
+        "Gold studio condenser microphones, wooden slats & dedicated monitoring.",
+      icon: "mic",
+    },
+    {
+      imagePath: "/uploads/studio/video-shoot.jpg",
+      title: "Music-video set & lighting",
+      description:
+        "4K cinema multi-cam setup, softbox lighting & performance staging.",
+      icon: "video",
+    },
+  ],
+  heroTrackUrl: "https://www.youtube.com/watch?v=bFoQyydNFLw",
+  heroTrackTitle: "Satgur Tumre Kaaj Saware",
+  heroTrackSubtitle: "66 Lakh+ views",
   studioIntro:
     "Book a professional recording session at our state-of-the-art studio. Choose from preset packages or build your own — select instruments, duration, sound engineer, mixing, and mastering. Recording and music-video shoots are completely free for every talented artist: this studio is seva.",
   studioAddress: "Near Ghanta Ghar Chowk, Ludhiana, Punjab 141008",

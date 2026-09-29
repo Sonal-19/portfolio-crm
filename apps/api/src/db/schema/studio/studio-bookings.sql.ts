@@ -67,7 +67,7 @@ export const studioBookingsTable = pgTable("studio_bookings", (pg) => ({
     .defaultNow()
     .notNull(),
   updatedAt: pg
-    .timestamp("updated_at")
+    .timestamp("updated_at", { withTimezone: true })
     .defaultNow()
     .notNull()
     .$onUpdate(() => new Date()),

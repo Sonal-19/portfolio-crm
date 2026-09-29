@@ -21,7 +21,7 @@ export const blogPostsTable = pgTable("blog_posts", (pg) => ({
     .defaultNow()
     .notNull(),
   updatedAt: pg
-    .timestamp("updated_at")
+    .timestamp("updated_at", { withTimezone: true })
     .defaultNow()
     .notNull()
     .$onUpdate(() => new Date()),

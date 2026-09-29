@@ -54,7 +54,6 @@ const toMin = (hhmm: string) => {
   return h * 60 + m;
 };
 
-
 export function BookingWizard({
   initialPackage,
   className,
@@ -412,7 +411,9 @@ export function BookingWizard({
                         <User className="size-4 text-primary shrink-0" />
                         <span className="truncate font-medium text-navy">
                           {engineerId
-                            ? (catalog.engineers.find((e) => e.id === engineerId)?.name ?? "Selected engineer")
+                            ? (catalog.engineers.find(
+                                (e) => e.id === engineerId,
+                              )?.name ?? "Selected engineer")
                             : "No preference (Any available)"}
                         </span>
                       </span>
@@ -429,7 +430,10 @@ export function BookingWizard({
                         setEngineerId(v === "none" ? "" : Number(v))
                       }
                     >
-                      <DropdownMenuRadioItem value="none" className="cursor-pointer">
+                      <DropdownMenuRadioItem
+                        value="none"
+                        className="cursor-pointer"
+                      >
                         <span className="flex items-center gap-2.5">
                           <User className="size-4 text-muted-foreground" />
                           <span>No preference (Any available)</span>
@@ -443,7 +447,9 @@ export function BookingWizard({
                         >
                           <span className="flex items-center gap-2.5">
                             <User className="size-4 text-primary" />
-                            <span className="font-medium text-navy">{e.name}</span>
+                            <span className="font-medium text-navy">
+                              {e.name}
+                            </span>
                           </span>
                         </DropdownMenuRadioItem>
                       ))}
@@ -632,7 +638,9 @@ export function BookingWizard({
                       className="flex h-11 w-full items-center justify-between rounded-xl border border-border bg-white px-3.5 text-sm text-navy shadow-xs transition-all duration-200 hover:border-gold/70 hover:bg-accent/15 focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/20 outline-none cursor-pointer"
                     >
                       <span className="font-medium text-navy">
-                        {ARTIST_TYPES.find(([v]) => v === person.artistType)?.[1] ?? "Select artist type"}
+                        {ARTIST_TYPES.find(
+                          ([v]) => v === person.artistType,
+                        )?.[1] ?? "Select artist type"}
                       </span>
                       <ChevronDown className="size-4 text-gold opacity-75 shrink-0 transition-transform duration-200" />
                     </button>
@@ -651,7 +659,11 @@ export function BookingWizard({
                       }
                     >
                       {ARTIST_TYPES.map(([v, l]) => (
-                        <DropdownMenuRadioItem key={v} value={v} className="cursor-pointer">
+                        <DropdownMenuRadioItem
+                          key={v}
+                          value={v}
+                          className="cursor-pointer"
+                        >
                           {l}
                         </DropdownMenuRadioItem>
                       ))}

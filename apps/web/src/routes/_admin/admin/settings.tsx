@@ -4,7 +4,12 @@ import { KeyRound, Save } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/admin/admin-shell";
+import {
+  HeroMusicCard,
+  isHeroTrackValid,
+} from "@/components/admin/hero-music-card";
 import { ImageUpload } from "@/components/admin/image-upload";
+import { StudioGalleryEditor } from "@/components/admin/studio-gallery-editor";
 import { Field } from "@/components/common/field";
 import { ErrorState, PageLoader } from "@/components/common/states";
 import { Button } from "@/components/ui/button";
@@ -34,7 +39,13 @@ function SettingsPage() {
   const save = useMutation({
     mutationFn: (s: Settings) => {
       const { id: _id, updatedAt: _u, ...body } = s;
-      return call(api.admin.settings.patch(body));
+      return call(
+        api.admin.settings.patch({
+          ...body,
+          // Cards without a photo would render as broken images.
+          studioGallery: body.studioGallery.filter((g) => g.imagePath),
+        }),
+      );
     },
     onSuccess: () => {
       toast.success("Settings saved. The website is updated.");
@@ -60,7 +71,16 @@ function SettingsPage() {
         title="Settings"
         description="Everything the public website shows about Bhai Sahib, the studio and contact details."
         actions={
-          <Button onClick={() => save.mutate(f)} disabled={save.isPending}>
+          <Button
+            onClick={() => {
+              if (!isHeroTrackValid(f.heroTrackUrl)) {
+                toast.error("Fix the hero music link before saving");
+                return;
+              }
+              save.mutate(f);
+            }}
+            disabled={save.isPending}
+          >
             <Save /> Save changes
           </Button>
         }
@@ -109,7 +129,7 @@ function SettingsPage() {
           <p className="-mt-2 text-sm text-muted-foreground">
             Upload real photos of Bhai Sahib to replace the placeholder artwork.
           </p>
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Hero portrait">
               <ImageUpload
                 folder="brand"
@@ -126,16 +146,18 @@ function SettingsPage() {
                 onChange={(p) => set("aboutImagePath", p)}
               />
             </Field>
-            <Field label="Studio photo">
-              <ImageUpload
-                folder="studio"
-                aspect="aspect-[4/5]"
-                value={f.studioImagePath}
-                onChange={(p) => set("studioImagePath", p)}
-              />
-            </Field>
           </div>
         </Card>
+
+        <HeroMusicCard
+          value={f}
+          onChange={(patch) => setF({ ...f, ...patch })}
+        />
+
+        <StudioGalleryEditor
+          items={f.studioGallery}
+          onChange={(items) => set("studioGallery", items)}
+        />
 
         <Card className="gap-4 p-5">
           <h2 className="font-semibold text-navy">Studio & contact</h2>
