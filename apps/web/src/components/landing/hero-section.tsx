@@ -4,6 +4,7 @@ import {
   Disc3,
   ExternalLink,
   HeartHandshake,
+  Loader2,
   Mic2,
   Pause,
   Play,
@@ -11,6 +12,7 @@ import {
 } from "lucide-react";
 import {
   motion,
+  useInView,
   useMotionTemplate,
   useMotionValue,
   useSpring,
@@ -19,7 +21,9 @@ import type React from "react";
 import { useEffect, useRef, useState } from "react";
 import { FaApple, FaInstagram, FaSpotify, FaYoutube } from "react-icons/fa6";
 import { Button } from "@/components/ui/button";
+import { useIsTouch, useLiteMotion } from "@/hooks/use-media-query";
 import type { SiteSettings } from "@/hooks/use-site-settings";
+import { cn } from "@/lib/utils";
 
 interface YouTubePlayerInstance {
   playVideo: () => void;
@@ -145,16 +149,63 @@ const equalizerBars = [
 export function HeroSection({ s }: { s?: SiteSettings }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const isPlayingRef = useRef(false);
+  const [pending, setPending] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const playerRef = useRef<YouTubePlayerInstance | null>(null);
-  const playerHostRef = useRef<HTMLDivElement | null>(null);
+  const iframeRef = useRef<HTMLIFrameElement | null>(null);
+  const lastToggleRef = useRef(0);
 
-  // Track chosen by the admin (Settings → Hero music).
-  const videoId = youtubeId(s?.heroTrackUrl);
-  const trackTitle = s?.heroTrackTitle || "Listen now";
-  const trackSubtitle = s?.heroTrackSubtitle;
-  const trackUrl = videoId
-    ? `https://www.youtube.com/watch?v=${videoId}`
-    : null;
+  const isTouch = useIsTouch();
+  const lite = useLiteMotion();
+  const heroRef = useRef<HTMLElement | null>(null);
+  const inView = useInView(heroRef, { margin: "80px" });
+  // Continuous background motion only on capable devices, and only while visible.
+  const animate = !lite && inView;
+
+  // Track chosen by the admin (Settings → Hero music) with resilient default.
+  const videoId = youtubeId(s?.heroTrackUrl) || "bFoQyydNFLw";
+  const trackTitle = s?.heroTrackTitle || "Satgur Tumre Kaaj Saware";
+  const trackSubtitle = s?.heroTrackSubtitle || "66 Lakh+ views";
+  const trackUrl = `https://www.youtube.com/watch?v=${videoId}`;
+  const isDefaultTrack = !s?.heroTrackUrl || videoId === "bFoQyydNFLw";
+
+  const updateMediaSession = (playing: boolean) => {
+    if (typeof window !== "undefined" && "mediaSession" in navigator) {
+      try {
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: trackTitle,
+          artist: "Bhai Gurpreet Singh Ji Shimla Wale",
+          album: "Gurbani Kirtan",
+          artwork: [
+            {
+              src: s?.heroImagePath ?? "/uploads/brand/mum9yvx9-r53u7sxm.webp",
+              sizes: "512x512",
+              type: "image/webp",
+            },
+          ],
+        });
+        navigator.mediaSession.playbackState = playing ? "playing" : "paused";
+        navigator.mediaSession.setActionHandler("play", () => {
+          if (audioRef.current?.paused) {
+            audioRef.current.play().catch(() => {});
+          }
+        });
+        navigator.mediaSession.setActionHandler("pause", () => {
+          audioRef.current?.pause();
+        });
+      } catch {}
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      try {
+        if (audioRef.current) {
+          audioRef.current.pause();
+        }
+      } catch {}
+    };
+  }, []);
 
   // Smooth mouse-following luxury golden spotlight for desktop
   const mouseX = useMotionValue(55);
@@ -163,46 +214,35 @@ export function HeroSection({ s }: { s?: SiteSettings }) {
   const springY = useSpring(mouseY, { stiffness: 90, damping: 25 });
   const mouseGlow = useMotionTemplate`radial-gradient(750px circle at ${springX}% ${springY}%, rgba(240, 138, 36, 0.14), rgba(212, 166, 74, 0.06) 40%, transparent 75%)`;
 
-  // (Re)create the hidden YouTube player whenever the admin changes the track.
-  // The YT API replaces its target node with an iframe, so the target is
-  // created imperatively inside a React-owned host div.
   useEffect(() => {
-    const host = playerHostRef.current;
-    if (!videoId || !host) return;
     let isMounted = true;
-    setIsPlaying(false);
-    isPlayingRef.current = false;
 
-    const createPlayer = () => {
-      if (!isMounted || !window.YT?.Player || playerRef.current) return;
-      const target = document.createElement("div");
-      host.appendChild(target);
+    const initPlayer = () => {
+      if (!isMounted || !window.YT?.Player) return;
+      const iframe = document.getElementById(
+        "hero-yt-iframe",
+      ) as HTMLIFrameElement | null;
+      if (!iframe) return;
+
       try {
-        playerRef.current = new window.YT.Player(target, {
-          videoId,
-          playerVars: {
-            autoplay: 0,
-            controls: 0,
-            disablekb: 1,
-            fs: 0,
-            loop: 1,
-            playlist: videoId,
-            modestbranding: 1,
-            rel: 0,
-            playsinline: 1,
-          },
+        if (playerRef.current) {
+          try {
+            playerRef.current.destroy();
+          } catch {}
+          playerRef.current = null;
+        }
+
+        playerRef.current = new window.YT.Player("hero-yt-iframe", {
           events: {
             onReady: (event: YouTubeEvent) => {
               if (!isMounted) return;
               try {
                 event.target.setVolume(100);
-                if (isPlayingRef.current) {
-                  event.target.unMute();
+                if (isPlayingRef.current && !isDefaultTrack) {
                   event.target.playVideo();
+                  event.target.unMute();
                 }
-              } catch {
-                // Browser playback policy handler
-              }
+              } catch {}
             },
             onStateChange: (event: YouTubeEvent) => {
               if (!isMounted) return;
@@ -210,22 +250,33 @@ export function HeroSection({ s }: { s?: SiteSettings }) {
               if (event.data === 1) {
                 setIsPlaying(true);
                 isPlayingRef.current = true;
+                setPending(false);
+                try {
+                  event.target.unMute();
+                  event.target.setVolume(100);
+                } catch {}
               } else if (event.data === 2) {
-                setIsPlaying(false);
-                isPlayingRef.current = false;
-              } else if (event.data === 0 && isPlayingRef.current) {
-                event.target.playVideo();
+                if (!isDefaultTrack) {
+                  setIsPlaying(false);
+                  isPlayingRef.current = false;
+                }
+                setPending(false);
+              } else if (event.data === 0) {
+                if (isPlayingRef.current && !isDefaultTrack) {
+                  event.target.playVideo();
+                } else if (!isDefaultTrack) {
+                  setIsPlaying(false);
+                  isPlayingRef.current = false;
+                }
               }
             },
           },
         });
-      } catch {
-        // Player creation fallback
-      }
+      } catch {}
     };
 
     if (window.YT?.Player) {
-      createPlayer();
+      initPlayer();
     } else {
       if (!document.getElementById("yt-iframe-api")) {
         const tag = document.createElement("script");
@@ -236,7 +287,7 @@ export function HeroSection({ s }: { s?: SiteSettings }) {
       const prevCallback = window.onYouTubeIframeAPIReady;
       window.onYouTubeIframeAPIReady = () => {
         prevCallback?.();
-        createPlayer();
+        initPlayer();
       };
     }
 
@@ -246,28 +297,111 @@ export function HeroSection({ s }: { s?: SiteSettings }) {
         playerRef.current?.destroy();
       } catch {}
       playerRef.current = null;
-      host.replaceChildren();
     };
-  }, [videoId]);
+  }, [videoId, isDefaultTrack]);
 
-  const handleTogglePlay = (e?: React.MouseEvent) => {
-    e?.preventDefault();
+  const handleTogglePlay = (e?: React.MouseEvent | React.KeyboardEvent) => {
     e?.stopPropagation();
 
-    const nextState = !isPlaying;
-    setIsPlaying(nextState);
-    isPlayingRef.current = nextState;
+    // Prevent double-activation if multiple rapid clicks occur
+    const now = Date.now();
+    if (now - lastToggleRef.current < 250) return;
+    lastToggleRef.current = now;
 
-    // If the YT API is still loading, onReady picks up isPlayingRef.
-    try {
-      if (nextState) {
+    const audio = audioRef.current;
+
+    // 1. If currently playing: PAUSE
+    if (isPlayingRef.current || (audio && !audio.paused)) {
+      setIsPlaying(false);
+      isPlayingRef.current = false;
+      setPending(false);
+      try {
+        if (audio) {
+          audio.pause();
+        }
+      } catch {}
+      try {
+        playerRef.current?.pauseVideo();
+      } catch {}
+      const iframe =
+        iframeRef.current ??
+        (document.getElementById("hero-yt-iframe") as HTMLIFrameElement | null);
+      iframe?.contentWindow?.postMessage(
+        JSON.stringify({ event: "command", func: "pauseVideo", args: "" }),
+        "*",
+      );
+      updateMediaSession(false);
+      return;
+    }
+
+    // 2. If currently paused: PLAY
+    setPending(true);
+
+    if (isDefaultTrack) {
+      if (audio) {
+        // Ensure unmuted & full volume for mobile Android/iOS
+        audio.muted = false;
+        audio.volume = 1.0;
+
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+          playPromise
+            .then(() => {
+              setIsPlaying(true);
+              isPlayingRef.current = true;
+              setPending(false);
+              updateMediaSession(true);
+            })
+            .catch((err) => {
+              console.warn("Direct HTML5 audio play error:", err);
+              setIsPlaying(false);
+              isPlayingRef.current = false;
+              setPending(false);
+              // Fallback to YouTube iframe
+              try {
+                playerRef.current?.playVideo();
+                playerRef.current?.unMute();
+                playerRef.current?.setVolume(100);
+              } catch {}
+            });
+        } else {
+          setIsPlaying(true);
+          isPlayingRef.current = true;
+          setPending(false);
+        }
+      } else {
+        setPending(false);
+      }
+    } else {
+      // Custom track via YouTube player
+      try {
+        playerRef.current?.playVideo();
         playerRef.current?.unMute();
         playerRef.current?.setVolume(100);
-        playerRef.current?.playVideo();
-      } else {
-        playerRef.current?.pauseVideo();
+      } catch {}
+
+      const iframe =
+        iframeRef.current ??
+        (document.getElementById("hero-yt-iframe") as HTMLIFrameElement | null);
+      if (iframe?.contentWindow) {
+        iframe.contentWindow.postMessage(
+          JSON.stringify({ event: "command", func: "playVideo", args: "" }),
+          "*",
+        );
+        iframe.contentWindow.postMessage(
+          JSON.stringify({ event: "command", func: "unMute", args: "" }),
+          "*",
+        );
+        iframe.contentWindow.postMessage(
+          JSON.stringify({ event: "command", func: "setVolume", args: [100] }),
+          "*",
+        );
       }
-    } catch {}
+      setIsPlaying(true);
+      isPlayingRef.current = true;
+      setPending(false);
+      updateMediaSession(true);
+    }
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
@@ -314,7 +448,8 @@ export function HeroSection({ s }: { s?: SiteSettings }) {
   return (
     <section
       id="home"
-      onMouseMove={handleMouseMove}
+      ref={heroRef}
+      onMouseMove={lite ? undefined : handleMouseMove}
       className="relative overflow-hidden bg-[#070b18] pt-28 pb-16 text-cream sm:pt-32 lg:pb-24"
     >
       {/* 1. Cinematic Gurmat Sangeet & Sikh Heritage Animated Background */}
@@ -324,10 +459,7 @@ export function HeroSection({ s }: { s?: SiteSettings }) {
 
         {/* Gurmat Sangeet Artwork Backdrop Image with gentle zoom & parallax breathing */}
         <motion.div
-          animate={{
-            scale: [1, 1.05, 1],
-            y: [0, -8, 0],
-          }}
+          animate={animate ? { scale: [1, 1.05, 1], y: [0, -8, 0] } : undefined}
           transition={{
             duration: 22,
             repeat: Number.POSITIVE_INFINITY,
@@ -335,12 +467,23 @@ export function HeroSection({ s }: { s?: SiteSettings }) {
           }}
           className="absolute inset-0"
         >
-          <img
-            src="gurmat-sangeet-hero-bg.jpg"
-            alt="Gurmat Sangeet Instruments and Sikh Spiritual Symbols"
-            role="presentation"
-            className="size-full object-cover object-center opacity-90 mix-blend-screen filter brightness-110 contrast-115 lg:opacity-80"
-          />
+          <picture>
+            <source srcSet="/gurmat-sangeet-hero-bg.webp" type="image/webp" />
+            <img
+              src="/gurmat-sangeet-hero-bg.jpg"
+              alt=""
+              role="presentation"
+              fetchPriority="high"
+              decoding="async"
+              className={cn(
+                "size-full object-cover object-center",
+                // Blend modes + filters on a full-bleed image are costly on mobile GPUs.
+                lite
+                  ? "opacity-75"
+                  : "opacity-90 mix-blend-screen filter brightness-110 contrast-115 lg:opacity-80",
+              )}
+            />
+          </picture>
         </motion.div>
 
         {/* Multi-directional Gradients for crystal-clear readability & cinematic contrast */}
@@ -350,42 +493,66 @@ export function HeroSection({ s }: { s?: SiteSettings }) {
 
         {/* Golden-amber ethereal warm glow behind portrait side */}
         <motion.div
-          animate={{
-            scale: isPlaying ? [1, 1.22, 1] : [1, 1.12, 1],
-            opacity: isPlaying ? [0.6, 0.85, 0.6] : [0.4, 0.65, 0.4],
-          }}
+          animate={
+            animate
+              ? {
+                  scale: isPlaying ? [1, 1.22, 1] : [1, 1.12, 1],
+                  opacity: isPlaying ? [0.6, 0.85, 0.6] : [0.4, 0.65, 0.4],
+                }
+              : undefined
+          }
           transition={{
             duration: isPlaying ? 3 : 7,
             repeat: Number.POSITIVE_INFINITY,
             ease: "easeInOut",
           }}
-          className="absolute -top-16 right-0 w-[550px] sm:w-[700px] h-[550px] sm:h-[700px] rounded-full bg-gradient-to-br from-saffron/25 via-gold/18 to-transparent blur-[130px]"
+          className={cn(
+            "absolute -top-16 right-0 rounded-full bg-gradient-to-br from-saffron/25 via-gold/18 to-transparent",
+            lite
+              ? "size-[360px] opacity-60 blur-3xl"
+              : "w-[550px] sm:w-[700px] h-[550px] sm:h-[700px] blur-[130px]",
+          )}
         />
 
         {/* Deep royal indigo secondary ambient bloom */}
-        <div className="absolute -bottom-20 left-0 w-[500px] sm:w-[650px] h-[500px] sm:h-[650px] rounded-full bg-gradient-to-tr from-navy-2/60 via-navy/35 to-transparent blur-[120px] opacity-80" />
+        {!lite && (
+          <div className="absolute -bottom-20 left-0 w-[500px] sm:w-[650px] h-[500px] sm:h-[650px] rounded-full bg-gradient-to-tr from-navy-2/60 via-navy/35 to-transparent blur-[120px] opacity-80" />
+        )}
 
         {/* Center warm ambient light bloom */}
         <motion.div
-          animate={{
-            scale: isPlaying ? [1, 1.25, 1] : [1, 1.15, 1],
-            opacity: isPlaying ? [0.55, 0.8, 0.55] : [0.35, 0.6, 0.35],
-          }}
+          animate={
+            animate
+              ? {
+                  scale: isPlaying ? [1, 1.25, 1] : [1, 1.15, 1],
+                  opacity: isPlaying ? [0.55, 0.8, 0.55] : [0.35, 0.6, 0.35],
+                }
+              : undefined
+          }
           transition={{
             duration: isPlaying ? 3.5 : 8,
             repeat: Number.POSITIVE_INFINITY,
             ease: "easeInOut",
           }}
-          className="absolute top-1/4 left-1/2 -translate-x-1/2 size-[450px] sm:size-[650px] rounded-full bg-gradient-to-b from-gold/15 via-saffron/10 to-transparent blur-[100px]"
+          className={cn(
+            "absolute top-1/4 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-b from-gold/15 via-saffron/10 to-transparent",
+            lite
+              ? "size-[320px] opacity-50 blur-3xl"
+              : "size-[450px] sm:size-[650px] blur-[100px]",
+          )}
         />
 
         {/* Divine Golden Rays (God Rays cascading from above) */}
-        <div className="absolute -top-24 left-1/4 w-[360px] h-[650px] -rotate-12 bg-gradient-to-b from-gold/18 via-saffron/6 to-transparent blur-3xl opacity-70" />
-        <div className="absolute -top-28 right-1/4 w-[380px] h-[700px] rotate-15 bg-gradient-to-b from-gold/15 via-gold/4 to-transparent blur-3xl opacity-60" />
+        {!lite && (
+          <>
+            <div className="absolute -top-24 left-1/4 w-[360px] h-[650px] -rotate-12 bg-gradient-to-b from-gold/18 via-saffron/6 to-transparent blur-3xl opacity-70" />
+            <div className="absolute -top-28 right-1/4 w-[380px] h-[700px] rotate-15 bg-gradient-to-b from-gold/15 via-gold/4 to-transparent blur-3xl opacity-60" />
+          </>
+        )}
 
         {/* Sacred Celestial Rotating Sikh Mandala / Darbar Sahib Rosette */}
         <motion.div
-          animate={{ rotate: 360 }}
+          animate={animate ? { rotate: 360 } : undefined}
           transition={{
             duration: 120,
             repeat: Number.POSITIVE_INFINITY,
@@ -432,7 +599,7 @@ export function HeroSection({ s }: { s?: SiteSettings }) {
         </motion.div>
 
         {/* Audio-Reactive Soundwave Radiating Rings (Active when playing) */}
-        {isPlaying && (
+        {isPlaying && animate && (
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
             {[0, 1, 2].map((ring) => (
               <motion.div
@@ -454,67 +621,71 @@ export function HeroSection({ s }: { s?: SiteSettings }) {
         )}
 
         {/* Desktop Interactive Smooth Spotlight */}
-        <motion.div
-          style={{ background: mouseGlow }}
-          className="absolute inset-0 hidden lg:block"
-        />
+        {!lite && (
+          <motion.div
+            style={{ background: mouseGlow }}
+            className="absolute inset-0 hidden lg:block"
+          />
+        )}
 
         {/* Floating Divine Swaras & Musical Notes (Ascending like fragrant Ardaas incense) */}
-        {floatingMusicElements.map((el, i) => (
-          <motion.div
-            key={i}
-            initial={{ y: 80, opacity: 0 }}
-            animate={{
-              y: [-20, -500],
-              x: [-14, 14, -10, 12, -14],
-              opacity: [0, 0.75, 0.85, 0.2, 0],
-              scale: [0.75, 1.15, 0.9],
-              rotate: [-10, 10, -5, 8, -10],
-            }}
-            transition={{
-              duration: el.duration,
-              repeat: Number.POSITIVE_INFINITY,
-              ease: "easeInOut",
-              delay: el.delay,
-            }}
-            style={{
-              left: el.left,
-              bottom: "5%",
-              fontSize: `${el.size}px`,
-            }}
-            className="absolute font-gurmukhi select-none text-gold-light/65 drop-shadow-[0_0_10px_rgba(243,213,138,0.7)] pointer-events-none"
-            title={el.title}
-          >
-            {el.symbol}
-          </motion.div>
-        ))}
+        {animate &&
+          floatingMusicElements.map((el, i) => (
+            <motion.div
+              key={i}
+              initial={{ y: 80, opacity: 0 }}
+              animate={{
+                y: [-20, -500],
+                x: [-14, 14, -10, 12, -14],
+                opacity: [0, 0.75, 0.85, 0.2, 0],
+                scale: [0.75, 1.15, 0.9],
+                rotate: [-10, 10, -5, 8, -10],
+              }}
+              transition={{
+                duration: el.duration,
+                repeat: Number.POSITIVE_INFINITY,
+                ease: "easeInOut",
+                delay: el.delay,
+              }}
+              style={{
+                left: el.left,
+                bottom: "5%",
+                fontSize: `${el.size}px`,
+              }}
+              className="absolute font-gurmukhi select-none text-gold-light/65 drop-shadow-[0_0_10px_rgba(243,213,138,0.7)] pointer-events-none"
+              title={el.title}
+            >
+              {el.symbol}
+            </motion.div>
+          ))}
 
         {/* Floating Delicate Golden Bokeh Particles */}
-        {goldenParticles.map((p, i) => (
-          <motion.div
-            key={i}
-            animate={{
-              y: [-12, 12, -12],
-              x: [-6, 6, -6],
-              opacity: [0.25, 0.85, 0.25],
-              scale: [0.85, 1.35, 0.85],
-            }}
-            transition={{
-              duration: p.duration,
-              repeat: Number.POSITIVE_INFINITY,
-              ease: "easeInOut",
-              delay: p.delay,
-            }}
-            style={{
-              top: p.top,
-              left: p.left,
-              right: p.right,
-              width: `${p.size}px`,
-              height: `${p.size}px`,
-            }}
-            className="absolute rounded-full bg-gold-light/80 shadow-[0_0_10px_rgba(243,213,138,0.9)]"
-          />
-        ))}
+        {animate &&
+          goldenParticles.map((p, i) => (
+            <motion.div
+              key={i}
+              animate={{
+                y: [-12, 12, -12],
+                x: [-6, 6, -6],
+                opacity: [0.25, 0.85, 0.25],
+                scale: [0.85, 1.35, 0.85],
+              }}
+              transition={{
+                duration: p.duration,
+                repeat: Number.POSITIVE_INFINITY,
+                ease: "easeInOut",
+                delay: p.delay,
+              }}
+              style={{
+                top: p.top,
+                left: p.left,
+                right: p.right,
+                width: `${p.size}px`,
+                height: `${p.size}px`,
+              }}
+              className="absolute rounded-full bg-gold-light/80 shadow-[0_0_10px_rgba(243,213,138,0.9)]"
+            />
+          ))}
       </div>
 
       {/* Main Grid: Title & Floating Glass Card */}
@@ -533,7 +704,7 @@ export function HeroSection({ s }: { s?: SiteSettings }) {
               borderColor: "rgba(212, 166, 74, 0.6)",
             }}
             whileTap={{ scale: 0.97 }}
-            className="inline-flex cursor-default items-center gap-2.5 rounded-full border border-gold/30 bg-gold/10 px-4 py-1.5 backdrop-blur-md shadow-sm transition-colors hover:bg-gold/15"
+            className="inline-flex cursor-default items-center gap-2.5 rounded-full border border-gold/30 bg-gold/10 px-4 py-1.5 lg:backdrop-blur-md shadow-sm transition-colors hover:bg-gold/15"
           >
             <p className="font-gurmukhi text-xs sm:text-sm font-medium text-gold-light tracking-wide">
               ਵਾਹਿਗੁਰੂ ਜੀ ਕਾ ਖ਼ਾਲਸਾ, ਵਾਹਿਗੁਰੂ ਜੀ ਕੀ ਫ਼ਤਹਿ
@@ -559,7 +730,7 @@ export function HeroSection({ s }: { s?: SiteSettings }) {
 
           {/* Gurmat Sangeet Classical Heritage Badge */}
           <div className="mt-3.5 flex items-center justify-center lg:justify-start">
-            <span className="inline-flex items-center gap-2 rounded-full border border-gold/30 bg-gold/10 px-3.5 py-1 text-xs font-medium text-gold-light backdrop-blur-md shadow-sm">
+            <span className="inline-flex items-center gap-2 rounded-full border border-gold/30 bg-gold/10 px-3.5 py-1 text-xs font-medium text-gold-light lg:backdrop-blur-md shadow-sm">
               <span className="size-1.5 rounded-full bg-gold animate-pulse" />
               <span>
                 Harmonium · Tabla · Tanti Saaj · Sri Guru Granth Sahib Raags
@@ -599,7 +770,7 @@ export function HeroSection({ s }: { s?: SiteSettings }) {
                 asChild
                 size="lg"
                 variant="outline"
-                className="group h-12 sm:h-13 w-full sm:w-auto rounded-full border border-gold/50 bg-white/5 backdrop-blur-md px-7 text-sm sm:text-base font-medium text-cream shadow-sm transition-all duration-300 hover:bg-white/10 hover:border-gold hover:text-gold-light active:scale-[0.98] cursor-pointer"
+                className="group h-12 sm:h-13 w-full sm:w-auto rounded-full border border-gold/50 bg-white/5 lg:backdrop-blur-md px-7 text-sm sm:text-base font-medium text-cream shadow-sm transition-all duration-300 hover:bg-white/10 hover:border-gold hover:text-gold-light active:scale-[0.98] cursor-pointer"
               >
                 <a
                   href="#latest"
@@ -628,7 +799,7 @@ export function HeroSection({ s }: { s?: SiteSettings }) {
                     whileHover={{ y: -3, scale: 1.06 }}
                     whileTap={{ scale: 0.95 }}
                     transition={{ type: "spring", stiffness: 400, damping: 20 }}
-                    className="group inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 backdrop-blur-md px-3.5 py-1.5 text-xs sm:text-sm font-medium text-cream/90 shadow-sm transition-all duration-200 hover:border-gold hover:bg-gold/15 hover:text-gold-light"
+                    className="group inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 lg:backdrop-blur-md px-3.5 py-1.5 text-xs sm:text-sm font-medium text-cream/90 shadow-sm transition-all duration-200 hover:border-gold hover:bg-gold/15 hover:text-gold-light"
                   >
                     <Icon className="size-3.5 sm:size-4 shrink-0 transition-transform duration-200 group-hover:scale-110 text-gold-light" />
                     <span>{label}</span>
@@ -662,21 +833,82 @@ export function HeroSection({ s }: { s?: SiteSettings }) {
               alt={s?.artistName ?? "Bhai Gurpreet Singh Ji Shimla Wale"}
               whileHover={{ scale: 1.025, y: -4 }}
               transition={{ type: "spring", stiffness: 260, damping: 20 }}
-              className="relative z-10 w-full max-h-[440px] sm:max-h-[500px] lg:max-h-[560px] object-contain object-bottom drop-shadow-[0_15px_30px_rgba(0,0,0,0.85)] drop-shadow-[0_0_35px_rgba(212,166,74,0.2)] border-2 border-gold/15 rounded-3xl cursor-pointer"
+              fetchPriority="high"
+              className={cn(
+                "relative z-10 w-full max-h-[440px] sm:max-h-[500px] lg:max-h-[560px] object-contain object-bottom border-2 border-gold/15 rounded-3xl cursor-pointer",
+                // Stacked drop-shadow filters on a large image are expensive on phones.
+                lite
+                  ? "shadow-[0_15px_30px_rgba(0,0,0,0.6)]"
+                  : "drop-shadow-[0_15px_30px_rgba(0,0,0,0.85)] drop-shadow-[0_0_35px_rgba(212,166,74,0.2)]",
+              )}
             />
 
             {/* Seamless Soft Fade at the Bottom of the Silhouette */}
             <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 sm:h-32 bg-gradient-to-t from-[#070b18] via-[#070b18]/70 to-transparent z-20" />
           </div>
 
+          {/* Native HTML5 Audio Engine for instant sound on Android Chrome, iOS Safari & Mobile */}
+          <audio
+            ref={audioRef}
+            id="hero-native-audio"
+            preload="metadata"
+            playsInline
+            loop
+            aria-hidden="true"
+            onPlay={() => {
+              setIsPlaying(true);
+              isPlayingRef.current = true;
+              setPending(false);
+              updateMediaSession(true);
+            }}
+            onPlaying={() => {
+              setIsPlaying(true);
+              isPlayingRef.current = true;
+              setPending(false);
+            }}
+            onPause={() => {
+              setIsPlaying(false);
+              isPlayingRef.current = false;
+              setPending(false);
+              updateMediaSession(false);
+            }}
+            onWaiting={() => {
+              setPending(true);
+            }}
+            onEnded={() => {
+              setIsPlaying(false);
+              isPlayingRef.current = false;
+              setPending(false);
+              updateMediaSession(false);
+            }}
+            onError={(e) => {
+              console.warn("Hero audio element error:", e.currentTarget.error);
+              setIsPlaying(false);
+              isPlayingRef.current = false;
+              setPending(false);
+            }}
+            style={{
+              position: "absolute",
+              width: "1px",
+              height: "1px",
+              opacity: 0,
+              pointerEvents: "none",
+              left: "-9999px",
+              bottom: 0,
+            }}
+          >
+            <source src="/audio/hero-music.m4a?v=2" type="audio/mp4" />
+            <source src="/audio/hero-music.mp3?v=2" type="audio/mpeg" />
+          </audio>
+
           {/* Floating Glass Music Track Card (track set in Admin → Settings) */}
           {videoId && (
             <motion.div
-              onClick={() => handleTogglePlay()}
+              onClick={(e) => handleTogglePlay(e)}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
                   e.preventDefault();
-                  handleTogglePlay();
+                  handleTogglePlay(e);
                 }
               }}
               role="button"
@@ -687,13 +919,16 @@ export function HeroSection({ s }: { s?: SiteSettings }) {
               whileHover={{ y: -3, scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               transition={{ type: "spring", stiffness: 350, damping: 25 }}
-              className="group relative z-30 -mt-8 sm:-mt-10 flex w-full max-w-[340px] sm:max-w-[420px] items-center justify-between gap-3 rounded-2xl border border-gold/35 bg-[#070b18]/95 p-3 sm:p-3.5 shadow-[0_15px_35px_rgba(0,0,0,0.75)] backdrop-blur-xl transition-all duration-300 hover:border-gold hover:shadow-[0_0_25px_rgba(212,166,74,0.25)] cursor-pointer select-none"
+              className="group relative z-30 -mt-8 sm:-mt-10 flex w-full max-w-[340px] sm:max-w-[420px] items-center justify-between gap-3 rounded-2xl border border-gold/35 bg-[#070b18]/95 p-3 sm:p-3.5 shadow-[0_15px_35px_rgba(0,0,0,0.75)] lg:backdrop-blur-xl transition-all duration-300 hover:border-gold hover:shadow-[0_0_25px_rgba(212,166,74,0.25)] cursor-pointer select-none"
             >
               <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
                 {/* Dedicated & Distinct Play / Pause Music Button */}
                 <button
                   type="button"
-                  onClick={handleTogglePlay}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleTogglePlay(e);
+                  }}
                   aria-label={
                     isPlaying ? "Pause website music" : "Play music on website"
                   }
@@ -702,7 +937,9 @@ export function HeroSection({ s }: { s?: SiteSettings }) {
                   }
                   className="relative flex size-10 sm:size-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-gold via-saffron to-gold-dark text-navy font-bold shadow-lg shadow-gold/25 transition-all duration-200 hover:scale-110 hover:shadow-gold/40 active:scale-95 cursor-pointer z-10"
                 >
-                  {isPlaying ? (
+                  {pending ? (
+                    <Loader2 className="size-5 animate-spin text-navy" />
+                  ) : isPlaying ? (
                     <Pause className="size-5 fill-navy text-navy transition-transform duration-200" />
                   ) : (
                     <Play className="size-5 fill-navy text-navy ml-0.5 transition-transform duration-200" />
@@ -719,10 +956,12 @@ export function HeroSection({ s }: { s?: SiteSettings }) {
                         <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
                         <span>Playing now</span>
                       </span>
+                    ) : pending ? (
+                      <span className="text-gold-light/80">Starting…</span>
                     ) : (
                       <span className="inline-flex items-center gap-1 text-gold-light/80">
                         <Volume2 className="size-3 shrink-0" />
-                        <span>Click to play</span>
+                        <span>{isTouch ? "Tap to play" : "Click to play"}</span>
                       </span>
                     )}
                     {trackSubtitle && (
@@ -775,10 +1014,28 @@ export function HeroSection({ s }: { s?: SiteSettings }) {
                   onClick={(e) => {
                     e.stopPropagation();
                     try {
+                      audioRef.current?.pause();
+                    } catch {}
+                    try {
                       playerRef.current?.pauseVideo();
                     } catch {}
-                    setIsPlaying(false);
+                    const iframe =
+                      iframeRef.current ??
+                      (document.getElementById(
+                        "hero-yt-iframe",
+                      ) as HTMLIFrameElement | null);
+                    iframe?.contentWindow?.postMessage(
+                      JSON.stringify({
+                        event: "command",
+                        func: "pauseVideo",
+                        args: "",
+                      }),
+                      "*",
+                    );
                     isPlayingRef.current = false;
+                    setIsPlaying(false);
+                    setPending(false);
+                    updateMediaSession(false);
                   }}
                   className="inline-flex items-center gap-1 rounded-full bg-red-600/20 border border-red-500/40 px-2 py-0.5 text-[10px] sm:text-[11px] font-semibold text-red-300 group-hover:bg-red-600 group-hover:text-white transition-colors duration-200"
                   title="Open on YouTube"
@@ -790,12 +1047,20 @@ export function HeroSection({ s }: { s?: SiteSettings }) {
             </motion.div>
           )}
 
-          {/* Hidden Background YouTube Player (1px fixed, active layout to avoid browser throttling) */}
+          {/* Background YouTube Player (in viewport, active layout so mobile browsers don't suspend audio) */}
           <div
-            ref={playerHostRef}
-            className="pointer-events-none fixed -bottom-32 -right-32 size-px opacity-0 overflow-hidden [&_iframe]:size-full"
+            className="pointer-events-none fixed bottom-0 right-0 z-[-1] size-[200px] opacity-[0.001] overflow-hidden"
             aria-hidden="true"
-          />
+          >
+            <iframe
+              id="hero-yt-iframe"
+              ref={iframeRef}
+              src={`https://www.youtube.com/embed/${videoId}?enablejsapi=1&autoplay=0&loop=1&playlist=${videoId}&playsinline=1&controls=0&rel=0&modestbranding=1`}
+              title={trackTitle}
+              allow="autoplay; encrypted-media"
+              className="size-full border-0"
+            />
+          </div>
         </motion.div>
       </div>
 
@@ -813,7 +1078,7 @@ export function HeroSection({ s }: { s?: SiteSettings }) {
               whileHover={{ y: -4, scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               transition={{ type: "spring", stiffness: 350, damping: 25 }}
-              className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] p-4 sm:p-5 text-center backdrop-blur-md shadow-xl transition-all duration-300 hover:border-gold/45 hover:bg-white/[0.08] hover:shadow-2xl hover:shadow-gold/10 cursor-pointer"
+              className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] p-4 sm:p-5 text-center lg:backdrop-blur-md shadow-xl transition-all duration-300 hover:border-gold/45 hover:bg-white/[0.08] hover:shadow-2xl hover:shadow-gold/10 cursor-pointer"
             >
               {/* Golden Gradient Shimmer Line on Hover */}
               <div className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-gold/0 to-transparent transition-all duration-500 group-hover:via-gold/90" />

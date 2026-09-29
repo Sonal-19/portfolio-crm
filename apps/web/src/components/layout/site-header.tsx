@@ -36,7 +36,7 @@ export function SiteHeader() {
       className={cn(
         "fixed inset-x-0 top-0 z-50 transition-colors duration-300",
         solid
-          ? "bg-navy/95 shadow-lg shadow-black/20 backdrop-blur"
+          ? "bg-navy/95 shadow-lg shadow-black/20 lg:backdrop-blur"
           : "bg-transparent",
       )}
     >

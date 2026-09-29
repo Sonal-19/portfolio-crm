@@ -65,10 +65,7 @@ export function StudioGalleryEditor({
 
       <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
         {items.map((it, i) => (
-          <div
-            key={i}
-            className="space-y-3 rounded-xl border bg-muted/30 p-3"
-          >
+          <div key={i} className="space-y-3 rounded-xl border bg-muted/30 p-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Photo {i + 1}
