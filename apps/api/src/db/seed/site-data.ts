@@ -15,21 +15,21 @@ export const siteSettingsSeed: InsertSiteSettings = {
   aboutImagePath: "/uploads/brand/about-placeholder.svg",
   studioGallery: [
     {
-      imagePath: "/uploads/studio/studio-console.jpg",
+      imagePath: "/uploads/studio/studio-console.svg",
       title: "Mixing & mastering suite",
       description:
         "Multi-channel analog console, studio monitors & acoustic diffuser panels.",
       icon: "sliders",
     },
     {
-      imagePath: "/uploads/studio/mic-booth.jpg",
+      imagePath: "/uploads/studio/mic-booth.svg",
       title: "Acoustically treated vocal booth",
       description:
         "Gold studio condenser microphones, wooden slats & dedicated monitoring.",
       icon: "mic",
     },
     {
-      imagePath: "/uploads/studio/video-shoot.jpg",
+      imagePath: "/uploads/studio/video-shoot.svg",
       title: "Music-video set & lighting",
       description:
         "4K cinema multi-cam setup, softbox lighting & performance staging.",
