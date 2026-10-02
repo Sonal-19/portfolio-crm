@@ -128,3 +128,29 @@
 .prose-sw blockquote {
   @apply border-l-4 border-gold pl-4 italic text-muted-foreground;
 }
+
+/* Infinite poster marquee (hero "Latest Releases"). The track holds the list
+ * twice, so sliding it by -50% lands exactly where it started. */
+@keyframes marquee {
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+.marquee-track {
+  animation: marquee var(--marquee-duration, 40s) linear infinite;
+  will-change: transform;
+}
+.marquee:hover .marquee-track,
+.marquee:focus-within .marquee-track,
+.marquee[data-paused="true"] .marquee-track {
+  animation-play-state: paused;
+}
+.marquee-fade {
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 5%,
+    #000 95%,
+    transparent
+  );
+}

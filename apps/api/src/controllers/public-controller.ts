@@ -1,26 +1,27 @@
-import { and, desc, eq, inArray } from "drizzle-orm";
+import { and, asc, desc, eq, gte, lt } from "drizzle-orm";
 import Elysia, { t } from "elysia";
 import { db } from "$/db";
 import {
-  artistTypes,
   blogPostsTable,
   contactQueriesTable,
   followUpsTable,
+  kirtanBookingsTable,
+  kirtanEventTypes,
+  kirtanLanguages,
+  kirtanRequirements,
+  releasesTable,
+  sangatSizes,
   siteSettingsTable,
   socialPlatforms,
   socialPostsTable,
-  studioAddonsTable,
-  studioBookingsTable,
-  studioEngineersTable,
-  studioInstrumentsTable,
-  studioPackagesTable,
+  venueTypes,
 } from "$/db/schema";
 import { leadService } from "$/lib/services/lead-service";
 import { notifyService } from "$/lib/services/notify-service";
 import { clientIp, rateLimitService } from "$/lib/services/rate-limit-service";
 import { fail, normalizePhone, ok } from "$/lib/utils";
 import { tEnum } from "$/lib/utils/schema";
-import { busyRangesForDate, istDayBounds } from "$/lib/utils/time";
+import { istDayBounds } from "$/lib/utils/time";
 
 const FORM_LIMIT = 5;
 const FORM_WINDOW_MS = 10 * 60 * 1000;
@@ -35,32 +36,32 @@ export const publicController = new Elysia({
     if (!row) return status(404, fail("Site settings missing"));
     return ok(row);
   })
-  .get("/studio/catalog", async () => {
-    const [packages, instruments, engineers, addons] = await Promise.all([
-      db
-        .select()
-        .from(studioPackagesTable)
-        .where(eq(studioPackagesTable.isActive, true))
-        .orderBy(studioPackagesTable.sortOrder),
-      db
-        .select()
-        .from(studioInstrumentsTable)
-        .where(eq(studioInstrumentsTable.isActive, true))
-        .orderBy(studioInstrumentsTable.sortOrder),
-      db
-        .select()
-        .from(studioEngineersTable)
-        .where(eq(studioEngineersTable.isActive, true)),
-      db
-        .select()
-        .from(studioAddonsTable)
-        .where(eq(studioAddonsTable.isActive, true)),
-    ]);
-    return ok({ packages, instruments, engineers, addons });
+  .get("/releases", async () => {
+    const rows = await db
+      .select()
+      .from(releasesTable)
+      .where(eq(releasesTable.isActive, true))
+      .orderBy(asc(releasesTable.sortOrder), desc(releasesTable.releaseDate));
+    return ok(rows);
   })
+  /** Only says whether a program is already confirmed that day — no details. */
   .get(
-    "/studio/availability",
-    async ({ query }) => ok(await busyRangesForDate(query.date)),
+    "/kirtan-availability",
+    async ({ query }) => {
+      const { start, end } = istDayBounds(query.date);
+      const [row] = await db
+        .select({ id: kirtanBookingsTable.id })
+        .from(kirtanBookingsTable)
+        .where(
+          and(
+            eq(kirtanBookingsTable.status, "confirmed"),
+            gte(kirtanBookingsTable.scheduledStart, start),
+            lt(kirtanBookingsTable.scheduledStart, end),
+          ),
+        )
+        .limit(1);
+      return ok({ date: query.date, busy: Boolean(row) });
+    },
     {
       query: t.Object({
         date: t.String({ pattern: "^\\d{4}-\\d{2}-\\d{2}$" }),
@@ -188,7 +189,7 @@ export const publicController = new Elysia({
     },
   )
   .post(
-    "/studio/bookings",
+    "/kirtan-bookings",
     async ({ body, request, server, status }) => {
       if (body.website) return ok(null, "Request received");
       if (
@@ -201,113 +202,93 @@ export const publicController = new Elysia({
         return status(429, fail("Too many submissions, please try later."));
       }
       if (normalizePhone(body.phone).length < 11) {
-        return status(400, fail("Please enter a valid phone number"));
+        return status(400, fail("Please enter a valid mobile number"));
       }
-      const { start } = istDayBounds(body.preferredDate);
-      if (start.getTime() < Date.now() - DAY_MS) {
-        return status(400, fail("Preferred date can't be in the past"));
+      if (body.whatsapp && normalizePhone(body.whatsapp).length < 11) {
+        return status(400, fail("Please enter a valid WhatsApp number"));
       }
-
-      let durationHours = body.durationHours ?? 2;
-      let packageName = "Custom session";
-      if (body.packageId) {
-        const [pkg] = await db
-          .select()
-          .from(studioPackagesTable)
-          .where(eq(studioPackagesTable.id, body.packageId))
-          .limit(1);
-        if (!pkg) return status(400, fail("Unknown session package"));
-        durationHours = pkg.durationHours;
-        packageName = pkg.name;
+      for (const d of [body.eventDate, body.alternateDate]) {
+        if (d && istDayBounds(d).end.getTime() < Date.now()) {
+          return status(400, fail("Program date can't be in the past"));
+        }
       }
-
-      // Drop ids that don't exist / are inactive rather than failing the form.
-      const instrumentIds = body.instrumentIds?.length
-        ? (
-            await db
-              .select({ id: studioInstrumentsTable.id })
-              .from(studioInstrumentsTable)
-              .where(inArray(studioInstrumentsTable.id, body.instrumentIds))
-          ).map((r) => r.id)
-        : [];
-      const addonIds = body.addonIds?.length
-        ? (
-            await db
-              .select({ id: studioAddonsTable.id })
-              .from(studioAddonsTable)
-              .where(inArray(studioAddonsTable.id, body.addonIds))
-          ).map((r) => r.id)
-        : [];
 
       const { lead } = await leadService.upsertFromPublic({
         name: body.name,
         phone: body.phone,
         email: body.email,
         city: body.city,
-        source: "booking",
-        tags: ["studio", body.artistType],
+        source: "kirtan_booking",
+        tags: ["kirtan", body.eventType, body.city.trim().toLowerCase()],
       });
 
       const [booking] = await db
-        .insert(studioBookingsTable)
+        .insert(kirtanBookingsTable)
         .values({
           leadId: lead.id,
           name: body.name.trim(),
           phone: normalizePhone(body.phone),
+          whatsapp: body.whatsapp ? normalizePhone(body.whatsapp) : null,
           email: body.email || null,
-          city: body.city || null,
-          artistType: body.artistType,
-          experience: body.experience || null,
-          sampleLink: body.sampleLink || null,
-          about: body.about || null,
-          packageId: body.packageId ?? null,
-          instrumentIds,
-          engineerId: body.engineerId ?? null,
-          addonIds,
-          durationHours,
-          projectTitle: body.projectTitle || null,
-          notes: body.notes || null,
-          preferredDate: body.preferredDate,
-          preferredStartTime: body.preferredStartTime,
+          eventType: body.eventType,
+          subject: body.subject.trim(),
+          language: body.language ?? "either",
+          expectedSangat: body.expectedSangat ?? null,
+          requirements: body.requirements ?? [],
+          message: body.message || null,
+          referralSource: body.referralSource || null,
+          eventDate: body.eventDate,
+          startTime: body.startTime,
+          durationHours: body.durationHours ?? 2,
+          alternateDate: body.alternateDate || null,
+          venueType: body.venueType,
+          venueName: body.venueName || null,
+          address: body.address.trim(),
+          city: body.city.trim(),
+          state: body.state.trim(),
+          pincode: body.pincode || null,
         })
-        .returning({ id: studioBookingsTable.id });
+        .returning({ id: kirtanBookingsTable.id });
 
       await leadService.log(
         lead.id,
-        "booking_received",
-        `Studio request #${booking?.id}: ${packageName}, ${body.preferredDate} ${body.preferredStartTime}`,
+        "kirtan_booking_received",
+        `Kirtan request #${booking?.id}: ${body.subject} — ${body.city}, ${body.eventDate} ${body.startTime}`,
       );
       await db.insert(followUpsTable).values({
         leadId: lead.id,
         dueAt: new Date(Date.now() + DAY_MS),
         type: "call",
-        title: `Review studio request #${booking?.id}`,
+        title: `Call to discuss kirtan request #${booking?.id}`,
       });
-      void notifyService.adminAlert("New studio request", {
-        ...body,
-        package: packageName,
-      });
+      void notifyService.adminAlert("New kirtan booking request", body);
       return ok({ id: booking?.id }, "Request received");
     },
     {
       body: t.Object({
         name: t.String({ minLength: 2, maxLength: 120 }),
         phone: t.String({ minLength: 10, maxLength: 20 }),
+        whatsapp: t.Optional(t.String({ maxLength: 20 })),
         email: t.Optional(t.String({ maxLength: 160 })),
-        city: t.Optional(t.String({ maxLength: 80 })),
-        artistType: tEnum(artistTypes),
-        experience: t.Optional(t.String({ maxLength: 500 })),
-        sampleLink: t.Optional(t.String({ maxLength: 500 })),
-        about: t.Optional(t.String({ maxLength: 2000 })),
-        packageId: t.Optional(t.Number()),
-        instrumentIds: t.Optional(t.Array(t.Number(), { maxItems: 20 })),
-        engineerId: t.Optional(t.Number()),
-        addonIds: t.Optional(t.Array(t.Number(), { maxItems: 10 })),
-        durationHours: t.Optional(t.Number({ minimum: 1, maximum: 10 })),
-        projectTitle: t.Optional(t.String({ maxLength: 160 })),
-        notes: t.Optional(t.String({ maxLength: 2000 })),
-        preferredDate: t.String({ pattern: "^\\d{4}-\\d{2}-\\d{2}$" }),
-        preferredStartTime: t.String({ pattern: "^\\d{2}:\\d{2}$" }),
+        eventType: tEnum(kirtanEventTypes),
+        subject: t.String({ minLength: 3, maxLength: 160 }),
+        language: t.Optional(tEnum(kirtanLanguages)),
+        expectedSangat: t.Optional(tEnum(sangatSizes)),
+        requirements: t.Optional(
+          t.Array(tEnum(kirtanRequirements), { maxItems: 10 }),
+        ),
+        message: t.Optional(t.String({ maxLength: 2000 })),
+        referralSource: t.Optional(t.String({ maxLength: 120 })),
+        eventDate: t.String({ pattern: "^\\d{4}-\\d{2}-\\d{2}$" }),
+        startTime: t.String({ pattern: "^\\d{2}:\\d{2}$" }),
+        durationHours: t.Optional(t.Number({ minimum: 1, maximum: 12 })),
+        alternateDate: t.Optional(t.String()),
+        venueType: tEnum(venueTypes),
+        venueName: t.Optional(t.String({ maxLength: 160 })),
+        address: t.String({ minLength: 3, maxLength: 400 }),
+        city: t.String({ minLength: 2, maxLength: 80 }),
+        state: t.String({ minLength: 2, maxLength: 80 }),
+        pincode: t.Optional(t.String({ maxLength: 10 })),
         website: t.Optional(t.String()),
       }),
     },

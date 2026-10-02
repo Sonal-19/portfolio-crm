@@ -88,7 +88,7 @@ export const socialSeedData: (SocialPostInput & {
       "2026-09-20T18:30:00+05:30",
     ],
     [
-      "New shabad recording done at our studio today with a young raagi jatha from Amritsar. Seva of the studio is free for every talented artist — apply on our website.",
+      "Kirtan darbar at Gurdwara Sri Guru Singh Sabha, Amritsar today. Families and committees can now book kirtan on our website 🙏",
       "2026-09-12T14:00:00+05:30",
     ],
     [
@@ -125,7 +125,7 @@ export const socialSeedData: (SocialPostInput & {
       "2026-09-22T08:00:00+05:30",
     ],
     [
-      "Studio diaries — recording day with a kirtani jatha 🎙️",
+      "Silent Kirtan, Ulhasnagar — 3 AM Prabhat Pheri with headphones 🎧",
       "2026-09-14T13:00:00+05:30",
     ],
     ["Amrit vela simran. Waheguru 🌅", "2026-09-05T05:30:00+05:30"],

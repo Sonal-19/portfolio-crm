@@ -1,5 +1,5 @@
-// Generates the Shimla Wale brand SVGs (logo, placeholders, studio art, blog
-// covers, social thumbnails) into apps/api/uploads/ and the favicon into
+// Generates the Shimla Wale brand SVGs (logo, placeholders, release posters,
+// kirtan gallery, blog covers, social thumbnails) into apps/api/uploads/ and the favicon into
 // apps/web/public/. Run with `bun run assets` from apps/api.
 import { mkdir } from "node:fs/promises";
 
@@ -161,60 +161,6 @@ function portrait(bgA: string, bgB: string) {
 </svg>`;
 }
 
-// ── Studio illustrations ──
-const studioConsole = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 520">
-  <defs><linearGradient id="w" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${NAVY_2}"/><stop offset="1" stop-color="${NAVY}"/></linearGradient>
-  <linearGradient id="g" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="${GOLD}"/><stop offset="1" stop-color="${SAFFRON}"/></linearGradient></defs>
-  <rect width="800" height="520" fill="url(#w)"/>
-  ${mandala(640, 110, 150, 0.1)}
-  <!-- monitors -->
-  <rect x="150" y="70" width="220" height="140" rx="10" fill="#0b1430" stroke="${GOLD}" stroke-opacity="0.5"/>
-  <rect x="430" y="70" width="220" height="140" rx="10" fill="#0b1430" stroke="${GOLD}" stroke-opacity="0.5"/>
-  <polyline points="165,150 185,120 205,160 225,100 245,170 265,110 285,150 305,125 325,160 355,140" fill="none" stroke="url(#g)" stroke-width="3"/>
-  ${Array.from({ length: 12 }, (_, i) => `<rect x="${448 + i * 16}" y="${190 - (20 + ((i * 37) % 90))}" width="10" height="${20 + ((i * 37) % 90)}" fill="url(#g)" opacity="0.85"/>`).join("")}
-  <!-- speakers -->
-  <rect x="60" y="120" width="70" height="120" rx="10" fill="#0b1430" stroke="${GOLD}" stroke-opacity="0.4"/><circle cx="95" cy="160" r="16" fill="none" stroke="${GOLD}"/><circle cx="95" cy="210" r="24" fill="none" stroke="${GOLD}"/>
-  <rect x="670" y="120" width="70" height="120" rx="10" fill="#0b1430" stroke="${GOLD}" stroke-opacity="0.4"/><circle cx="705" cy="160" r="16" fill="none" stroke="${GOLD}"/><circle cx="705" cy="210" r="24" fill="none" stroke="${GOLD}"/>
-  <!-- console -->
-  <path d="M60 330 L740 330 L780 470 L20 470 Z" fill="#101d44" stroke="${GOLD}" stroke-opacity="0.35"/>
-  ${Array.from({ length: 24 }, (_, i) => {
-    const x = 90 + i * 26;
-    const k = 360 + ((i * 29) % 70);
-    return `<line x1="${x}" y1="355" x2="${x}" y2="450" stroke="#2a3a6e" stroke-width="4"/><rect x="${x - 7}" y="${k}" width="14" height="9" rx="2" fill="${i % 5 === 0 ? SAFFRON : CREAM}"/>`;
-  }).join("")}
-</svg>`;
-
-const micBooth = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 520">
-  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${GOLD_LIGHT}"/><stop offset="1" stop-color="${SAFFRON}"/></linearGradient></defs>
-  <rect width="800" height="520" fill="${NAVY}"/>
-  ${Array.from({ length: 10 }, (_, r) => Array.from({ length: 16 }, (_, c) => `<rect x="${c * 50 + 2}" y="${r * 52 + 2}" width="46" height="48" fill="${(r + c) % 2 ? NAVY_2 : "#132150"}"/>`).join("")).join("")}
-  <circle cx="400" cy="210" r="150" fill="${SAFFRON}" opacity="0.12"/>
-  <circle cx="400" cy="200" r="95" fill="none" stroke="#0b1430" stroke-width="10"/>
-  <circle cx="400" cy="200" r="78" fill="#0b1430" opacity="0.55"/>
-  <rect x="365" y="120" width="70" height="130" rx="35" fill="url(#g)"/>
-  <g stroke="${NAVY}" stroke-opacity="0.4" stroke-width="3">${Array.from({ length: 6 }, (_, i) => `<line x1="372" y1="${145 + i * 16}" x2="428" y2="${145 + i * 16}"/>`).join("")}</g>
-  <path d="M340 230 Q340 300 400 300 Q460 300 460 230" fill="none" stroke="url(#g)" stroke-width="8" stroke-linecap="round"/>
-  <line x1="400" y1="300" x2="400" y2="470" stroke="${GOLD}" stroke-width="8"/>
-  <path d="M330 480 L470 480" stroke="${GOLD}" stroke-width="10" stroke-linecap="round"/>
-</svg>`;
-
-const videoShoot = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 520">
-  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${GOLD_LIGHT}"/><stop offset="1" stop-color="${SAFFRON}"/></linearGradient>
-  <radialGradient id="spot" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="${GOLD_LIGHT}" stop-opacity="0.5"/><stop offset="1" stop-color="${GOLD_LIGHT}" stop-opacity="0"/></radialGradient></defs>
-  <rect width="800" height="520" fill="${NAVY}"/>
-  <polygon points="130,60 60,470 330,470" fill="url(#spot)"/>
-  <polygon points="670,60 470,470 740,470" fill="url(#spot)"/>
-  <rect x="105" y="40" width="50" height="34" rx="6" fill="#0b1430" stroke="${GOLD}"/>
-  <rect x="645" y="40" width="50" height="34" rx="6" fill="#0b1430" stroke="${GOLD}"/>
-  <!-- camera -->
-  <rect x="270" y="180" width="200" height="130" rx="18" fill="#0b1430" stroke="url(#g)" stroke-width="5"/>
-  <circle cx="370" cy="245" r="44" fill="none" stroke="url(#g)" stroke-width="8"/><circle cx="370" cy="245" r="20" fill="${SAFFRON}" opacity="0.8"/>
-  <path d="M470 215 L560 175 L560 315 L470 275 Z" fill="url(#g)"/>
-  <circle cx="300" cy="160" r="26" fill="none" stroke="${GOLD}" stroke-width="5"/><circle cx="360" cy="160" r="26" fill="none" stroke="${GOLD}" stroke-width="5"/>
-  <line x1="370" y1="310" x2="310" y2="470" stroke="${GOLD}" stroke-width="6"/><line x1="370" y1="310" x2="430" y2="470" stroke="${GOLD}" stroke-width="6"/><line x1="370" y1="310" x2="370" y2="470" stroke="${GOLD}" stroke-width="6"/>
-  <circle cx="620" cy="110" r="10" fill="#ef4444"/><text x="640" y="117" font-family="Arial" font-size="20" fill="${CREAM}">REC</text>
-</svg>`;
-
 // ── Cards (blog covers + social thumbs) ──
 function card(opts: {
   w: number;
@@ -287,15 +233,43 @@ async function main() {
       w: 1200,
       h: 630,
       title: "Bhai Gurpreet Singh Ji Shimla Wale",
-      kicker: "Gurbani Kirtan · Free Studio Seva",
+      kicker: "Gurbani Kirtan · Amritvela Trust",
       hue: [NAVY, NAVY_2],
       motif: "mic",
     }),
   );
 
-  await write(`${UP}studio/studio-console.svg`, studioConsole);
-  await write(`${UP}studio/mic-booth.svg`, micBooth);
-  await write(`${UP}studio/video-shoot.svg`, videoShoot);
+  const { releaseSeed } = await import("../src/db/seed/release-data");
+  for (const [i, r] of releaseSeed.entries()) {
+    const wide = r.aspect === "wide";
+    await write(
+      `${UP}${r.posterPath.replace("/uploads/", "")}`,
+      card({
+        w: wide ? 1280 : 1000,
+        h: wide ? 720 : 1000,
+        title: r.title,
+        kicker: r.subtitle ?? "New release",
+        hue: HUES[(i + 1) % HUES.length] as [string, string],
+        motif: MOTIFS[i % MOTIFS.length] ?? "lamp",
+        badge: wide ? "▶ WATCH" : "♫ LISTEN",
+      }),
+    );
+  }
+
+  const { siteSettingsSeed } = await import("../src/db/seed/site-data");
+  for (const [i, g] of (siteSettingsSeed.gallery ?? []).entries()) {
+    await write(
+      `${UP}${g.imagePath.replace("/uploads/", "")}`,
+      card({
+        w: 1200,
+        h: 800,
+        title: g.title,
+        kicker: "Kirtan moments",
+        hue: HUES[(i + 3) % HUES.length] as [string, string],
+        motif: MOTIFS[(i + 3) % MOTIFS.length] ?? "harmonium",
+      }),
+    );
+  }
 
   const { blogSeed } = await import("../src/db/seed/blog-data");
   for (const [i, b] of blogSeed.entries()) {

@@ -4,8 +4,8 @@ import {
   AlarmClock,
   ArrowRight,
   CalendarClock,
+  HandHeart,
   Inbox,
-  Mic2,
   Phone,
   TrendingUp,
   UserPlus,
@@ -17,6 +17,7 @@ import { LEAD_STATUS_TONE, Pill } from "@/components/admin/badges";
 import { EmptyState, ErrorState, PageLoader } from "@/components/common/states";
 import { Card } from "@/components/ui/card";
 import { api, call } from "@/lib/api";
+import { eventLabel } from "@/lib/kirtan";
 import {
   cn,
   formatDateTime,
@@ -31,7 +32,7 @@ export const Route = createFileRoute("/_admin/admin/")({
 });
 
 const SOURCE_COLOR: Record<string, string> = {
-  booking: "#f08a24",
+  kirtan_booking: "#f08a24",
   query: "#3b82f6",
   whatsapp: "#22c55e",
   event: "#8b5cf6",
@@ -103,11 +104,11 @@ function Dashboard() {
           to="/admin/leads"
         />
         <Kpi
-          label="Pending studio requests"
-          value={kpis.pendingApplications}
-          icon={Mic2}
+          label="New kirtan requests"
+          value={kpis.newKirtanRequests}
+          icon={HandHeart}
           tone="bg-orange-50 text-orange-600"
-          to="/admin/bookings"
+          to="/admin/kirtan-bookings"
         />
         <Kpi
           label="Follow-ups today"
@@ -131,8 +132,8 @@ function Dashboard() {
           to="/admin/queries"
         />
         <Kpi
-          label="Sessions recorded (month)"
-          value={kpis.sessionsThisMonth}
+          label="Programs this month"
+          value={kpis.programsThisMonth}
           icon={TrendingUp}
           tone="bg-emerald-50 text-emerald-600"
         />
@@ -211,7 +212,7 @@ function Dashboard() {
         <Card className="p-5">
           <h2 className="font-semibold text-navy">Leads by source</h2>
           <p className="-mt-4 text-xs text-muted-foreground">
-            {kpis.totalLeads} total · {kpis.recordedRate}% recorded
+            {kpis.totalLeads} total · {kpis.completedRate}% completed
           </p>
           <div className="flex h-3 overflow-hidden rounded-full bg-muted">
             {data.bySource.map((s) => (
@@ -251,37 +252,43 @@ function Dashboard() {
           </div>
         </Card>
 
-        {/* Upcoming sessions */}
+        {/* Upcoming programs */}
         <Card className="gap-0 p-0 xl:col-span-2">
           <div className="flex items-center justify-between border-b px-5 py-4">
             <h2 className="font-semibold text-navy">
-              Upcoming studio sessions
+              Upcoming kirtan programs
             </h2>
             <Link
-              to="/admin/bookings"
+              to="/admin/kirtan-bookings"
               className="text-sm text-primary hover:underline"
             >
-              All requests
+              All bookings
             </Link>
           </div>
-          {data.upcomingSessions.length === 0 ? (
-            <EmptyState title="No sessions scheduled" className="m-5" />
+          {data.upcomingPrograms.length === 0 ? (
+            <EmptyState title="No programs confirmed" className="m-5" />
           ) : (
             <ul className="divide-y">
-              {data.upcomingSessions.map((b) => (
-                <li key={b.id} className="flex items-center gap-3 px-5 py-3">
-                  <div className="grid size-10 place-items-center rounded-lg bg-orange-50 text-orange-600">
-                    <Mic2 className="size-5" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="font-medium text-navy">{b.name}</p>
-                    <p className="truncate text-sm text-muted-foreground">
-                      {b.projectTitle ?? "Studio session"}
+              {data.upcomingPrograms.map((b) => (
+                <li key={b.id}>
+                  <Link
+                    to="/admin/kirtan-bookings"
+                    search={{ id: b.id }}
+                    className="flex items-center gap-3 px-5 py-3 hover:bg-muted/40"
+                  >
+                    <div className="grid size-10 shrink-0 place-items-center rounded-lg bg-orange-50 text-orange-600">
+                      <HandHeart className="size-5" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-medium text-navy">{b.name}</p>
+                      <p className="truncate text-sm text-muted-foreground">
+                        {eventLabel(b.eventType)} · {b.city}
+                      </p>
+                    </div>
+                    <p className="shrink-0 text-right text-sm">
+                      {formatDateTime(b.scheduledStart)}
                     </p>
-                  </div>
-                  <p className="text-right text-sm">
-                    {formatDateTime(b.scheduledStart)}
-                  </p>
+                  </Link>
                 </li>
               ))}
             </ul>

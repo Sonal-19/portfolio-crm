@@ -2,7 +2,7 @@ import { pgEnum, pgTable } from "drizzle-orm/pg-core";
 import { adminsTable } from "../auth/admins.sql";
 
 export const leadSources = [
-  "booking",
+  "kirtan_booking",
   "query",
   "manual",
   "whatsapp",
@@ -15,8 +15,8 @@ export const leadStatuses = [
   "new",
   "contacted",
   "follow_up",
-  "shortlisted",
-  "recorded",
+  "confirmed",
+  "completed",
   "closed",
 ] as const;
 export type LeadStatus = (typeof leadStatuses)[number];

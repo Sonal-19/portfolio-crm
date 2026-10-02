@@ -1,7 +1,7 @@
 # Shimla Wale: Portfolio + CRM
 
 Official website of **Bhai Gurpreet Singh Ji Shimla Wale** (shimlawale.com) plus the admin CRM
-for leads, free studio requests, follow-ups, blog and WhatsApp outreach.
+for leads, kirtan bookings, release posters, follow-ups, blog and WhatsApp outreach.
 
 - `apps/api`: Bun + Elysia + Drizzle (Postgres). Port **4200**.
 - `apps/web`: React 19 + Vite 8 + Tailwind v4 + TanStack Router/Query/Table. Port **3200**.
@@ -27,10 +27,11 @@ Seeded admin: `admin@shimlawale.com` / `ChangeMe123!`. **Change it** in Admin â†
 | Area | Backend | Frontend |
 | --- | --- | --- |
 | Public site data | `controllers/public-controller.ts` | `routes/index.tsx`, `components/landing/*` |
-| Free studio booking | `POST /api/public/studio/bookings` | `components/studio/booking-wizard.tsx`, `/studio/book` |
+| Hero release carousel | `GET /api/public/releases`, `admin-releases-controller.ts` | `components/landing/release-carousel.tsx`, `/admin/releases` |
+| Book Kirtan form | `POST /api/public/kirtan-bookings` | `components/kirtan/kirtan-booking-form.tsx`, `/kirtan/book` |
 | Leads, remarks, timeline | `admin-leads-controller.ts`, `lib/services/lead-service.ts` | `/admin/leads`, `/admin/leads/$id` |
 | Follow-ups & calendar | `admin-follow-ups-controller.ts` | `/admin/calendar` |
-| Studio requests review | `admin-bookings-controller.ts` | `/admin/bookings` |
+| Kirtan bookings review | `admin-kirtan-bookings-controller.ts` | `/admin/kirtan-bookings` |
 | WhatsApp lists/templates/broadcasts/channel | `admin-whatsapp-controller.ts`, `lib/services/whatsapp/wa-sender.ts` | `/admin/whatsapp` |
 | Social feed (FB/IG/YT) | `lib/services/social/*` | `/admin/social`, landing "Latest" section |
 | Blog | `admin-blog-controller.ts` | `/admin/blog` |
@@ -48,4 +49,4 @@ Seeded admin: `admin@shimlawale.com` / `ChangeMe123!`. **Change it** in Admin â†
 
 - `apps/api/uploads/` is git-ignored. Run `bun run assets` on a fresh machine to regenerate brand art;
   admin uploads (converted to WebP) are stored there too, so back it up in production.
-- All times are Indian Standard Time; the studio's open hours (9:00â€“21:00) are in `apps/api/src/lib/utils/time.ts`.
+- All times are Indian Standard Time (helpers in `apps/api/src/lib/utils/time.ts`).

@@ -1,21 +1,21 @@
 import { pgTable } from "drizzle-orm/pg-core";
 
-export const studioGalleryIcons = [
-  "sliders",
-  "mic",
-  "video",
-  "disc",
+export const galleryIcons = [
+  "khanda",
+  "harmonium",
+  "tabla",
+  "sangat",
+  "pheri",
   "headphones",
-  "camera",
 ] as const;
-export type StudioGalleryIcon = (typeof studioGalleryIcons)[number];
+export type GalleryIcon = (typeof galleryIcons)[number];
 
-/** One photo card in the landing page's "Inside our studio" gallery. */
-export type StudioGalleryItem = {
+/** One photo card in the landing page's "Kirtan moments" gallery. */
+export type GalleryItem = {
   imagePath: string;
   title: string;
   description: string;
-  icon: StudioGalleryIcon;
+  icon: GalleryIcon;
 };
 
 export type SiteStats = {
@@ -34,19 +34,17 @@ export const siteSettingsTable = pgTable("site_settings", (pg) => ({
   bio: pg.text().notNull(),
   heroImagePath: pg.text("hero_image_path"),
   aboutImagePath: pg.text("about_image_path"),
-  /** Studio photos shown on the landing page, in display order. */
-  studioGallery: pg
-    .jsonb("studio_gallery")
-    .$type<StudioGalleryItem[]>()
-    .notNull()
-    .default([]),
+  /** Kirtan program photos shown on the landing page, in display order. */
+  gallery: pg.jsonb("gallery").$type<GalleryItem[]>().notNull().default([]),
   /** YouTube track the hero's music card plays (any YouTube / YT Music URL). */
   heroTrackUrl: pg.text("hero_track_url"),
   heroTrackTitle: pg.text("hero_track_title"),
   /** Small line under the title, e.g. "66 Lakh+ views". */
   heroTrackSubtitle: pg.text("hero_track_subtitle"),
-  studioIntro: pg.text("studio_intro").notNull(),
-  studioAddress: pg.text("studio_address").notNull(),
+  /** Intro paragraph of the landing page's Kirtan Seva section. */
+  kirtanIntro: pg.text("kirtan_intro").notNull(),
+  /** Office / Amritvela Trust address shown in contact and footer. */
+  address: pg.text().notNull(),
   mapEmbedUrl: pg.text("map_embed_url"),
   phone: pg.text().notNull(),
   whatsappNumber: pg.text("whatsapp_number").notNull(),

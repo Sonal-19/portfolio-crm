@@ -4,12 +4,12 @@ import { KeyRound, Save } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/admin/admin-shell";
+import { GalleryEditor } from "@/components/admin/gallery-editor";
 import {
   HeroMusicCard,
   isHeroTrackValid,
 } from "@/components/admin/hero-music-card";
 import { ImageUpload } from "@/components/admin/image-upload";
-import { StudioGalleryEditor } from "@/components/admin/studio-gallery-editor";
 import { Field } from "@/components/common/field";
 import { ErrorState, PageLoader } from "@/components/common/states";
 import { Button } from "@/components/ui/button";
@@ -43,7 +43,7 @@ function SettingsPage() {
         api.admin.settings.patch({
           ...body,
           // Cards without a photo would render as broken images.
-          studioGallery: body.studioGallery.filter((g) => g.imagePath),
+          gallery: body.gallery.filter((g) => g.imagePath),
         }),
       );
     },
@@ -69,7 +69,7 @@ function SettingsPage() {
     <>
       <PageHeader
         title="Settings"
-        description="Everything the public website shows about Bhai Sahib, the studio and contact details."
+        description="Everything the public website shows about Bhai Sahib, kirtan seva and contact details. Release posters are under Releases."
         actions={
           <Button
             onClick={() => {
@@ -154,18 +154,21 @@ function SettingsPage() {
           onChange={(patch) => setF({ ...f, ...patch })}
         />
 
-        <StudioGalleryEditor
-          items={f.studioGallery}
-          onChange={(items) => set("studioGallery", items)}
+        <GalleryEditor
+          items={f.gallery}
+          onChange={(items) => set("gallery", items)}
         />
 
         <Card className="gap-4 p-5">
-          <h2 className="font-semibold text-navy">Studio & contact</h2>
-          <Field label="Studio introduction">
-            <Textarea rows={4} {...text("studioIntro")} />
+          <h2 className="font-semibold text-navy">Kirtan & contact</h2>
+          <Field
+            label="Kirtan Seva introduction"
+            hint="Shown at the top of the Kirtan section on the home page."
+          >
+            <Textarea rows={4} {...text("kirtanIntro")} />
           </Field>
-          <Field label="Studio address">
-            <Input {...text("studioAddress")} />
+          <Field label="Office / Amritvela Trust address">
+            <Input {...text("address")} />
           </Field>
           <Field label="Google Maps embed URL">
             <Input {...text("mapEmbedUrl")} />

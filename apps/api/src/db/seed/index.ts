@@ -3,23 +3,15 @@ import { db } from "$/db";
 import {
   adminsTable,
   blogPostsTable,
+  releasesTable,
   siteSettingsTable,
   socialPostsTable,
-  studioAddonsTable,
-  studioEngineersTable,
-  studioInstrumentsTable,
-  studioPackagesTable,
 } from "$/db/schema";
 import { blogSeed } from "./blog-data";
 import { crmSeed } from "./crm-seed";
+import { releaseSeed } from "./release-data";
 import { siteSettingsSeed } from "./site-data";
 import { socialSeedData } from "./social-data";
-import {
-  addonsSeed,
-  engineersSeed,
-  instrumentsSeed,
-  packagesSeed,
-} from "./studio-data";
 
 // Safety check: prevent accidental seeding on production.
 const isProduction =
@@ -41,9 +33,8 @@ async function mainSeed() {
       truncate table
         wa_broadcast_recipients, wa_broadcasts, wa_broadcast_list_members,
         wa_broadcast_lists, wa_templates, lead_activities, lead_notes,
-        follow_ups, contact_queries, studio_bookings, leads, social_posts,
-        blog_posts, studio_addons, studio_engineers, studio_instruments,
-        studio_packages, site_settings, auths, admins
+        follow_ups, contact_queries, kirtan_bookings, leads, social_posts,
+        blog_posts, releases, site_settings, auths, admins
       restart identity cascade
     `);
 
@@ -61,14 +52,8 @@ async function mainSeed() {
     console.info("Seeding site settings...");
     await tx.insert(siteSettingsTable).values(siteSettingsSeed);
 
-    console.info("Seeding studio catalog...");
-    const pkgs = await tx
-      .insert(studioPackagesTable)
-      .values(packagesSeed)
-      .returning({ id: studioPackagesTable.id });
-    await tx.insert(studioInstrumentsTable).values(instrumentsSeed);
-    await tx.insert(studioEngineersTable).values(engineersSeed);
-    await tx.insert(studioAddonsTable).values(addonsSeed);
+    console.info("Seeding releases...");
+    await tx.insert(releasesTable).values(releaseSeed);
 
     console.info("Seeding blog...");
     await tx
@@ -78,11 +63,7 @@ async function mainSeed() {
     console.info("Seeding social feed cache...");
     await tx.insert(socialPostsTable).values(socialSeedData);
 
-    await crmSeed(
-      tx,
-      pkgs.map((p) => p.id),
-      admin.id,
-    );
+    await crmSeed(tx, admin.id);
   });
 
   console.info("✅ Database seed completed successfully!");

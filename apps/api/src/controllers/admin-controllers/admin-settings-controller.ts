@@ -1,14 +1,11 @@
 import { eq } from "drizzle-orm";
 import Elysia, { t } from "elysia";
 import { db } from "$/db";
-import {
-  adminsTable,
-  siteSettingsTable,
-  studioGalleryIcons,
-} from "$/db/schema";
+import { adminsTable, galleryIcons, siteSettingsTable } from "$/db/schema";
 import {
   storageService,
   type UploadFolder,
+  uploadFolders,
 } from "$/lib/services/storage-service";
 import { fail, ok, youtubeId } from "$/lib/utils";
 import { tEnum } from "$/lib/utils/schema";
@@ -47,13 +44,13 @@ export const adminSettingsController = new Elysia({
         bio: t.Optional(t.String()),
         heroImagePath: nullableStr,
         aboutImagePath: nullableStr,
-        studioGallery: t.Optional(
+        gallery: t.Optional(
           t.Array(
             t.Object({
               imagePath: t.String({ minLength: 1 }),
               title: t.String({ maxLength: 80 }),
               description: t.String({ maxLength: 240 }),
-              icon: tEnum(studioGalleryIcons),
+              icon: tEnum(galleryIcons),
             }),
             { maxItems: 12 },
           ),
@@ -61,8 +58,8 @@ export const adminSettingsController = new Elysia({
         heroTrackUrl: nullableStr,
         heroTrackTitle: nullableStr,
         heroTrackSubtitle: nullableStr,
-        studioIntro: t.Optional(t.String()),
-        studioAddress: t.Optional(t.String()),
+        kirtanIntro: t.Optional(t.String()),
+        address: t.Optional(t.String()),
         mapEmbedUrl: nullableStr,
         phone: t.Optional(t.String()),
         whatsappNumber: t.Optional(t.String()),
@@ -119,13 +116,7 @@ export const adminSettingsController = new Elysia({
     {
       body: t.Object({
         file: t.File(),
-        folder: tEnum([
-          "brand",
-          "gallery",
-          "blog",
-          "studio",
-          "social",
-        ] as const),
+        folder: tEnum(uploadFolders),
       }),
     },
   );

@@ -66,7 +66,7 @@ export function FollowUpForm({
           value={type}
           onChange={(e) => setType(e.target.value as FollowUpType)}
         >
-          {FOLLOW_UP_TYPES.filter((t) => t !== "session").map((t) => (
+          {FOLLOW_UP_TYPES.filter((t) => t !== "program").map((t) => (
             <option key={t} value={t}>
               {titleCase(t)}
             </option>
@@ -77,7 +77,7 @@ export function FollowUpForm({
         <Input
           required
           minLength={2}
-          placeholder="e.g. Call to confirm session date"
+          placeholder="e.g. Call to confirm program date"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
         />

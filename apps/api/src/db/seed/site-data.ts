@@ -3,45 +3,45 @@ import type { InsertSiteSettings } from "$/db/schema";
 export const siteSettingsSeed: InsertSiteSettings = {
   id: 1,
   artistName: "Bhai Gurpreet Singh Ji Shimla Wale",
-  tagline: "Gurbani Kirtan · Raagi · Seva through Sangeet",
+  tagline: "Gurbani Kirtan · 30+ Years of Seva · Chairman, Amritvela Trust",
   bio: [
-    "**Bhai Gurpreet Singh Ji Shimla Wale** is a Gurbani kirtan artist whose voice has carried the shabad to sangat across Punjab and around the world. His jukebox *Best Of Bhai Gurpreet Singh Shimla Wale – Non Stop Kirtan* has crossed **66 lakh views**, and releases like *Satgur Tumre Kaaj Saware*, *Aukhi Ghadi Na Dekhan Deyi* and the album *Narayan* are played in homes and gurdwaras every day.",
+    "**Bhai Gurpreet Singh Ji Shimla Wale** has been performing Gurbani Kirtan for **more than 30 years**. He leads a professional kirtani jatha that travels across India for samagams, gurpurabs, Amritvela programs and family functions. His jukebox *Best Of Bhai Gurpreet Singh Shimla Wale – Non Stop Kirtan* has crossed **66 lakh views**, and releases like *Satgur Tumre Kaaj Saware*, *Aukhi Ghadi Na Dekhan Deyi* and the album *Narayan* are played in homes and gurdwaras every day.",
     "",
-    "Rooted in the raag tradition and trained in harmonium and classical vocal, Bhai Sahib sees kirtan as seva: sharing Guru Sahib's bani in a way that brings calm, strength and chardi kala to every listener.",
+    "He is the **Chairman of the Amritvela Trust**, which organises Gurbani Kirtan, Amritvela Simran and humanitarian programs. Under his leadership the Trust was recognised by the **World Book of Records, London** for a 43-day Prabhat Pheri and Silent (headphone) Kirtan, held every morning from 3:00 to 5:00 AM during the Guru Nanak Jayanti celebrations in Ulhasnagar.",
     "",
-    "Alongside his kirtan, he runs a professional recording studio at Ghanta Ghar, Ludhiana, open free of cost to raagis, kirtani jathas and talented young artists who deserve to be heard.",
+    "Rooted in the raag tradition, Bhai Sahib sees kirtan as seva: sharing Guru Sahib's bani in a way that brings calm, strength and chardi kala to every listener.",
   ].join("\n"),
-  heroImagePath: "/uploads/brand/portrait-placeholder.svg",
+  heroImagePath: "/uploads/brand/profile-transparent.webp",
   aboutImagePath: "/uploads/brand/about-placeholder.svg",
-  studioGallery: [
+  gallery: [
     {
-      imagePath: "/uploads/studio/studio-console.jpg",
-      title: "Mixing & mastering suite",
+      imagePath: "/uploads/gallery/kirtan-1.svg",
+      title: "Amritvela Simran samagam",
       description:
-        "Multi-channel analog console, studio monitors & acoustic diffuser panels.",
-      icon: "sliders",
+        "Sangat joins Naam Simran in the early hours, 3:00 to 5:00 AM.",
+      icon: "khanda",
     },
     {
-      imagePath: "/uploads/studio/mic-booth.jpg",
-      title: "Acoustically treated vocal booth",
+      imagePath: "/uploads/gallery/kirtan-2.svg",
+      title: "Gurpurab kirtan darbar",
       description:
-        "Gold studio condenser microphones, wooden slats & dedicated monitoring.",
-      icon: "mic",
+        "The full jatha with harmonium, tabla and a professional sound setup.",
+      icon: "harmonium",
     },
     {
-      imagePath: "/uploads/studio/video-shoot.jpg",
-      title: "Music-video set & lighting",
+      imagePath: "/uploads/gallery/kirtan-3.svg",
+      title: "Silent Kirtan, Ulhasnagar",
       description:
-        "4K cinema multi-cam setup, softbox lighting & performance staging.",
-      icon: "video",
+        "World-record Prabhat Pheri with wireless headphones for the sangat.",
+      icon: "headphones",
     },
   ],
   heroTrackUrl: "https://www.youtube.com/watch?v=bFoQyydNFLw",
   heroTrackTitle: "Satgur Tumre Kaaj Saware",
   heroTrackSubtitle: "66 Lakh+ views",
-  studioIntro:
-    "Book a professional recording session at our state-of-the-art studio. Choose from preset packages or build your own — select instruments, duration, sound engineer, mixing, and mastering. Recording and music-video shoots are completely free for every talented artist: this studio is seva.",
-  studioAddress: "Near Ghanta Ghar Chowk, Ludhiana, Punjab 141008",
+  kirtanIntro:
+    "Invite Bhai Gurpreet Singh Ji and his professional kirtani jatha to your gurdwara, home or function. We perform at Sukhmani Sahib and Akhand Path bhogs, Anand Karaj, gurpurabs, Amritvela Simran programs and Silent Kirtan, anywhere in India. Share your details and our team will call you to plan the program.",
+  address: "Amritvela Trust, Near Ghanta Ghar Chowk, Ludhiana, Punjab 141008",
   mapEmbedUrl:
     "https://www.google.com/maps?q=Ghanta+Ghar+Chowk+Ludhiana&output=embed",
   phone: "+91 98765 43210",
@@ -59,7 +59,7 @@ export const siteSettingsSeed: InsertSiteSettings = {
   stats: {
     followers: "94K+",
     views: "66 Lakh+",
-    years: "20+",
+    years: "30+",
     albums: "25+",
   },
 };

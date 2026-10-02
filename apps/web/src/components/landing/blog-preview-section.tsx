@@ -67,7 +67,7 @@ export function BlogPreviewSection() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <SectionHeading
           kicker="From the blog"
-          title="Reflections, releases & studio tips"
+          title="Reflections, releases & kirtan diaries"
         />
         <div className="mt-12 grid gap-6 md:grid-cols-3">
           {data.map((p) => (

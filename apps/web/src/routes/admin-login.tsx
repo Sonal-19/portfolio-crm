@@ -1,12 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import {
-  ArrowLeft,
-  Eye,
-  EyeOff,
-  Lock,
-  LogIn,
-} from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Lock, LogIn } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Field } from "@/components/common/field";
@@ -72,7 +66,7 @@ function AdminLogin() {
             </div>
             <h1 className="font-display text-2xl text-navy">Admin Portal</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Sign in to manage leads, bookings & content.
+              Sign in to manage leads, kirtan bookings & content.
             </p>
           </div>
 

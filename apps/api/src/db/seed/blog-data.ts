@@ -28,22 +28,22 @@ Each raag carries a mood. Choosing the right raag for a shabad is a way of respe
 *Waheguru Ji Ka Khalsa, Waheguru Ji Ki Fateh.*`,
   },
   {
-    title: "5 Things to Prepare Before Your First Studio Recording",
-    slug: "prepare-for-first-studio-recording",
+    title: "How to Plan Kirtan for Your Family Function",
+    slug: "plan-kirtan-for-family-function",
     excerpt:
-      "Our studio is free for talented artists. Here's how to make the most of your session time.",
-    tags: ["studio", "tips"],
+      "Sukhmani Sahib, Akhand Path bhog, Anand Karaj or a new home: a simple checklist to plan a peaceful kirtan program.",
+    tags: ["kirtan", "tips"],
     publishedAt: days(9),
     coverImagePath: "/uploads/blog/cover-2.svg",
-    body: `Recording is different from singing live. A little preparation goes a long way.
+    body: `A kirtan program at home or in the gurdwara is a beautiful way to mark a family moment. A little planning helps everything run in chardi kala.
 
-1. **Rehearse with a metronome**: studio tracks are recorded in layers, so steady tempo matters.
-2. **Tune your harmonium**: bring it a day early if you can so our engineer can check it.
-3. **Bring the shabad text**: print the Gurmukhi and any translation you want in subtitles.
-4. **Rest your voice**: no shouting or late nights before the session.
-5. **Decide your arrangement**: which instruments come in, and when.
+1. **Fix the date early**: gurpurab and wedding seasons fill up fast.
+2. **Choose the venue**: home, gurdwara or hall. Make sure there's space for the jatha and the sangat to sit.
+3. **Sound**: tell us if a sound system is already arranged, or if the jatha should bring one.
+4. **Timing**: most programs are 1–3 hours; Amritvela programs begin around 3–4 AM.
+5. **Share a contact person** at the venue for the day.
 
-Ready? [Apply for a free session](/studio/book).`,
+Ready? [Book Kirtan](/kirtan/book).`,
   },
   {
     title: "Behind the Scenes: Satgur Tumre Kaaj Saware",
@@ -61,7 +61,7 @@ We recorded the vocals in three takes, keeping the one with the most bhavna rath
 
 ## The video
 
-The video was shot in our own studio set, which is now open to every artist who applies.`,
+The video was shot with the full jatha, just as the shabad is sung at our live kirtan diwans.`,
   },
   {
     title: "Understanding Raag in Gurbani: A Beginner's Guide",
@@ -97,26 +97,25 @@ Begin with commonly sung raags like *Asa*, *Sorath* and *Bilawal*. Listen to rec
 - In winter, cover your throat on early morning journeys.`,
   },
   {
-    title: "Our Studio Is Open: Free Recording for Talented Artists",
-    slug: "free-studio-for-talented-artists",
+    title: "The 43-Day Prabhat Pheri and Silent Kirtan in Ulhasnagar",
+    slug: "silent-kirtan-world-record-ulhasnagar",
     excerpt:
-      "Announcing free recording and music-video shoots at our Ludhiana studio for raagis and young artists.",
-    tags: ["studio", "announcement"],
+      "How the Amritvela Trust's 3 AM Prabhat Pheri with headphone kirtan was recognised by the World Book of Records, London.",
+    tags: ["amritvela-trust", "announcement"],
     publishedAt: days(60),
     coverImagePath: "/uploads/blog/cover-6.svg",
-    body: `We're happy to share that our professional studio at **Ghanta Ghar, Ludhiana** is open to every talented artist. There's no charge.
+    body: `For **43 days** before Guru Nanak Jayanti, sangat in **Ulhasnagar** woke at Amritvela and joined a Prabhat Pheri from **3:00 to 5:00 AM**.
 
-## Who can apply?
+## Why Silent Kirtan?
 
-Raagis, kirtani jathas, singers and bands with devotional or meaningful music.
+The pheri passes through sleeping neighbourhoods. With wireless headphones, every member of the sangat heard the kirtan clearly while the streets stayed quiet.
 
-## How it works
+## A world record
 
-1. Apply online with a sample of your work.
-2. Our team reviews your request and calls you on WhatsApp.
-3. We schedule your session.
-4. You record; we mix, master and help you publish.
+The **World Book of Records, London** recognised the event, organised by the **Amritvela Trust** under the leadership of Bhai Gurpreet Singh Ji Shimla Wale.
 
-[Apply now](/studio/book)`,
+## Bring it to your city
+
+Gurdwara committees can invite the jatha for a Prabhat Pheri or Silent Kirtan. [Book Kirtan](/kirtan/book)`,
   },
 ];

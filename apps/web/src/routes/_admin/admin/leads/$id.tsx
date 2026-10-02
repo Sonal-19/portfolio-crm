@@ -4,11 +4,11 @@ import {
   ArrowLeft,
   Check,
   Clock,
+  HandHeart,
   Inbox,
   Mail,
   MapPin,
   MessageSquarePlus,
-  Mic2,
   Phone,
   Trash2,
   X,
@@ -16,7 +16,7 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 import {
-  BOOKING_STATUS_TONE,
+  KIRTAN_STATUS_TONE,
   LEAD_STATUS_TONE,
   Pill,
   SOURCE_TONE,
@@ -38,8 +38,10 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { api, call } from "@/lib/api";
+import { eventLabel } from "@/lib/kirtan";
 import {
   cn,
+  formatClock,
   formatDate,
   formatDateTime,
   prettyPhone,
@@ -122,7 +124,7 @@ function LeadDetail() {
 
   if (isLoading) return <PageLoader />;
   if (error || !data) return <ErrorState error={error} />;
-  const { lead, notes, followUps, activities, bookings, queries } = data;
+  const { lead, notes, followUps, activities, kirtanBookings, queries } = data;
   const pending = followUps.filter((f) => f.status === "pending");
   const past = followUps.filter((f) => f.status !== "pending");
 
@@ -271,28 +273,29 @@ function LeadDetail() {
 
           <Card className="gap-3 p-5">
             <h2 className="flex items-center gap-2 font-semibold text-navy">
-              <Mic2 className="size-4" /> Studio requests
+              <HandHeart className="size-4" /> Kirtan bookings
             </h2>
-            {bookings.length === 0 && (
+            {kirtanBookings.length === 0 && (
               <p className="text-sm text-muted-foreground">None</p>
             )}
-            {bookings.map((b) => (
+            {kirtanBookings.map((b) => (
               <Link
                 key={b.id}
-                to="/admin/bookings"
+                to="/admin/kirtan-bookings"
                 search={{ id: b.id }}
                 className="block rounded-lg border p-3 text-sm hover:bg-muted/50"
               >
                 <div className="flex items-center justify-between gap-2">
                   <span className="font-medium">
-                    #{b.id} {b.projectTitle ?? "Session"}
+                    #{b.id} {eventLabel(b.eventType)}
                   </span>
-                  <StatusPill value={b.status} map={BOOKING_STATUS_TONE} />
+                  <StatusPill value={b.status} map={KIRTAN_STATUS_TONE} />
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground">
                   {b.scheduledStart
-                    ? `Scheduled ${formatDateTime(b.scheduledStart)}`
-                    : `Preferred ${formatDate(`${ymd(b.preferredDate)}T00:00:00+05:30`)} ${b.preferredStartTime}`}
+                    ? `Confirmed ${formatDateTime(b.scheduledStart)}`
+                    : `Requested ${formatDate(`${ymd(b.eventDate)}T00:00:00+05:30`)} ${formatClock(b.startTime)}`}
+                  {` · ${b.city}`}
                 </p>
               </Link>
             ))}

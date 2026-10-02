@@ -5,7 +5,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export const STUDIO_TZ = "Asia/Kolkata";
+export const IST_TZ = "Asia/Kolkata";
 
 type D = Date | string | null | undefined;
 const toDate = (d: Exclude<D, null | undefined>) =>
@@ -15,7 +15,7 @@ const toDate = (d: Exclude<D, null | undefined>) =>
 export function formatDate(d: D) {
   if (!d) return "";
   return toDate(d).toLocaleDateString("en-IN", {
-    timeZone: STUDIO_TZ,
+    timeZone: IST_TZ,
     day: "numeric",
     month: "short",
     year: "numeric",
@@ -27,7 +27,7 @@ export function formatTime(d: D) {
   if (!d) return "";
   return toDate(d)
     .toLocaleTimeString("en-IN", {
-      timeZone: STUDIO_TZ,
+      timeZone: IST_TZ,
       hour: "numeric",
       minute: "2-digit",
       hour12: true,
@@ -50,7 +50,7 @@ export function todayIst(offsetDays = 0) {
   return new Date(Date.now() + offsetDays * 86_400_000).toLocaleDateString(
     "en-CA",
     {
-      timeZone: STUDIO_TZ,
+      timeZone: IST_TZ,
     },
   );
 }
@@ -63,7 +63,7 @@ export function istLocalToIso(local: string) {
 /** ISO → IST wall-clock "yyyy-MM-ddTHH:mm" (for datetime-local inputs) */
 export function isoToIstLocal(d: D) {
   if (!d) return "";
-  const s = toDate(d).toLocaleString("sv-SE", { timeZone: STUDIO_TZ });
+  const s = toDate(d).toLocaleString("sv-SE", { timeZone: IST_TZ });
   return s.replace(" ", "T").slice(0, 16);
 }
 

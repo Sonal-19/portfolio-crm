@@ -638,7 +638,7 @@ function SendTab({ onCreated }: { onCreated: (id: number) => void }) {
         </div>
         <Field
           label="Share content ({{link}})"
-          hint="Pick a blog post, social post or the booking page, or paste any URL."
+          hint="Pick a blog post, social post or the Book Kirtan page, or paste any URL."
         >
           <NativeSelect
             className="w-full"

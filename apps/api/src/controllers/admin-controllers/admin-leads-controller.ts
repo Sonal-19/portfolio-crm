@@ -13,13 +13,13 @@ import { db } from "$/db";
 import {
   contactQueriesTable,
   followUpsTable,
+  kirtanBookingsTable,
   leadActivitiesTable,
   leadNotesTable,
   leadPriorities,
   leadSources,
   leadStatuses,
   leadsTable,
-  studioBookingsTable,
 } from "$/db/schema";
 import { leadService } from "$/lib/services/lead-service";
 import { csvEscape, fail, normalizePhone, ok } from "$/lib/utils";
@@ -204,8 +204,8 @@ export const adminLeadsController = new Elysia({
       .limit(1);
     if (!lead) return status(404, fail("Lead not found"));
 
-    const [notes, followUps, activities, bookings, queries] = await Promise.all(
-      [
+    const [notes, followUps, activities, kirtanBookings, queries] =
+      await Promise.all([
         db
           .select()
           .from(leadNotesTable)
@@ -224,17 +224,23 @@ export const adminLeadsController = new Elysia({
           .limit(100),
         db
           .select()
-          .from(studioBookingsTable)
-          .where(eq(studioBookingsTable.leadId, id))
-          .orderBy(desc(studioBookingsTable.createdAt)),
+          .from(kirtanBookingsTable)
+          .where(eq(kirtanBookingsTable.leadId, id))
+          .orderBy(desc(kirtanBookingsTable.createdAt)),
         db
           .select()
           .from(contactQueriesTable)
           .where(eq(contactQueriesTable.leadId, id))
           .orderBy(desc(contactQueriesTable.createdAt)),
-      ],
-    );
-    return ok({ lead, notes, followUps, activities, bookings, queries });
+      ]);
+    return ok({
+      lead,
+      notes,
+      followUps,
+      activities,
+      kirtanBookings,
+      queries,
+    });
   })
   .patch(
     "/:id",

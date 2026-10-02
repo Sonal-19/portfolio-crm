@@ -15,8 +15,8 @@ export function SiteFooter() {
         <div className="space-y-4 lg:col-span-2">
           <Logo className="h-12" />
           <p className="max-w-md text-sm leading-relaxed text-cream/70">
-            {s?.tagline}. Our professional studio at Ghanta Ghar, Ludhiana is
-            free for every talented artist.
+            {s?.tagline}. Kirtan across India for paths, weddings, gurpurabs and
+            Amritvela programs.
           </p>
           <SocialIconRow settings={s} />
         </div>
@@ -31,13 +31,13 @@ export function SiteFooter() {
               </Link>
             </li>
             <li>
-              <Link to="/" hash="studio" className="hover:text-gold-light">
-                Recording Studio
+              <Link to="/" hash="kirtan" className="hover:text-gold-light">
+                Kirtan Seva
               </Link>
             </li>
             <li>
-              <Link to="/studio/book" className="hover:text-gold-light">
-                Book a Free Session
+              <Link to="/kirtan/book" className="hover:text-gold-light">
+                Book Kirtan
               </Link>
             </li>
             <li>
@@ -54,12 +54,12 @@ export function SiteFooter() {
         </div>
         <div>
           <h3 className="mb-4 font-brand text-sm tracking-widest text-gold-light">
-            VISIT THE STUDIO
+            AMRITVELA TRUST
           </h3>
           <ul className="space-y-3 text-sm">
             <li className="flex gap-2">
               <MapPin className="mt-0.5 size-4 shrink-0 text-gold" />
-              {s?.studioAddress}
+              {s?.address}
             </li>
             {s?.phone && (
               <li className="flex gap-2">

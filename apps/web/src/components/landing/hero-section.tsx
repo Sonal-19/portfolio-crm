@@ -5,7 +5,7 @@ import {
   ExternalLink,
   HeartHandshake,
   Loader2,
-  Mic2,
+  HandHeart,
   Pause,
   Play,
   Volume2,
@@ -24,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { useIsTouch, useLiteMotion } from "@/hooks/use-media-query";
 import type { SiteSettings } from "@/hooks/use-site-settings";
 import { cn } from "@/lib/utils";
+import { ReleaseCarousel } from "./release-carousel";
 
 interface YouTubePlayerInstance {
   playVideo: () => void;
@@ -688,6 +689,9 @@ export function HeroSection({ s }: { s?: SiteSettings }) {
           ))}
       </div>
 
+      {/* Latest album / song posters (admin → Releases) */}
+      <ReleaseCarousel />
+
       {/* Main Grid: Title & Floating Glass Card */}
       <div className="relative mx-auto grid max-w-7xl items-center gap-10 sm:gap-12 px-4 sm:px-6 lg:grid-cols-[1.1fr_0.9fr]">
         {/* Header / Title Section (order-2 on Mobile, order-1 on Desktop) */}
@@ -725,7 +729,8 @@ export function HeroSection({ s }: { s?: SiteSettings }) {
           </h1>
 
           <p className="mx-auto mt-4 sm:mt-5 max-w-xl text-base sm:text-lg text-cream/75 leading-relaxed font-sans lg:mx-0">
-            {s?.tagline ?? "Gurbani Kirtan · Raagi · Seva through Sangeet"}
+            {s?.tagline ??
+              "Gurbani Kirtan · 30+ Years of Seva · Chairman, Amritvela Trust"}
           </p>
 
           {/* Gurmat Sangeet Classical Heritage Badge */}
@@ -751,11 +756,11 @@ export function HeroSection({ s }: { s?: SiteSettings }) {
                 className="group relative overflow-hidden h-12 sm:h-13 w-full sm:w-auto rounded-full bg-gradient-to-r from-gold via-saffron to-gold bg-[length:200%_auto] px-7 text-sm sm:text-base font-semibold text-navy shadow-lg shadow-saffron/25 transition-all duration-300 hover:shadow-saffron/40 hover:brightness-105 active:scale-[0.98] cursor-pointer"
               >
                 <Link
-                  to="/studio/book"
+                  to="/kirtan/book"
                   className="flex items-center justify-center gap-2 relative z-10"
                 >
-                  <Mic2 className="size-4 shrink-0 transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-12" />
-                  <span>Book a Free Studio Session</span>
+                  <HandHeart className="size-4 shrink-0 transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-12" />
+                  <span>Book Kirtan</span>
                   <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
                 </Link>
               </Button>
@@ -815,7 +820,7 @@ export function HeroSection({ s }: { s?: SiteSettings }) {
           initial={{ opacity: 0, scale: 0.95, y: 16 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
-          className="order-1 relative mx-auto flex flex-col items-center w-full max-w-[320px] sm:max-w-[400px] lg:order-2 lg:max-w-[480px] xl:max-w-[520px] mb-6 sm:mb-8 lg:mb-0"
+          className="hidden md:block order-1 relative mx-auto flex flex-col items-center w-full max-w-[320px] sm:max-w-[400px] lg:order-2 lg:max-w-[480px] xl:max-w-[520px] mb-6 sm:mb-8 lg:mb-0"
         >
           {/* Luminous Warm Golden Halo Aura directly behind Bhai Sahib */}
           <div className="pointer-events-none absolute top-4 sm:top-8 left-1/2 -translate-x-1/2 size-[260px] sm:size-[340px] lg:size-[400px] rounded-full bg-gradient-to-b from-gold/35 via-saffron/20 to-transparent blur-3xl opacity-80" />
@@ -1065,7 +1070,7 @@ export function HeroSection({ s }: { s?: SiteSettings }) {
       </div>
 
       {/* Interactive Glassmorphism Stats Cards */}
-      <motion.div
+      {/* <motion.div
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7, delay: 0.25 }}
@@ -1080,10 +1085,7 @@ export function HeroSection({ s }: { s?: SiteSettings }) {
               transition={{ type: "spring", stiffness: 350, damping: 25 }}
               className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] p-4 sm:p-5 text-center lg:backdrop-blur-md shadow-xl transition-all duration-300 hover:border-gold/45 hover:bg-white/[0.08] hover:shadow-2xl hover:shadow-gold/10 cursor-pointer"
             >
-              {/* Golden Gradient Shimmer Line on Hover */}
               <div className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-gold/0 to-transparent transition-all duration-500 group-hover:via-gold/90" />
-
-              {/* Icon Orb */}
               <div
                 className={`mx-auto mb-2 flex size-8 sm:size-9 items-center justify-center rounded-full border transition-transform duration-300 group-hover:scale-110 ${badgeColor}`}
               >
@@ -1099,7 +1101,7 @@ export function HeroSection({ s }: { s?: SiteSettings }) {
             </motion.div>
           ))}
         </div>
-      </motion.div>
+      </motion.div> */}
     </section>
   );
 }

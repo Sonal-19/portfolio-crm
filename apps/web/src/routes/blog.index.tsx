@@ -20,7 +20,7 @@ function BlogIndex() {
           Blog
         </p>
         <h1 className="mt-3 font-display text-4xl sm:text-5xl">
-          Reflections & Studio Diaries
+          Reflections & Kirtan Diaries
         </h1>
       </section>
       <section className="bg-cream py-14">

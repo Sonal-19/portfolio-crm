@@ -42,7 +42,7 @@ export const followUpTypes = [
   "visit",
   "email",
   "meeting",
-  "session",
+  "program",
 ] as const;
 export type FollowUpType = (typeof followUpTypes)[number];
 export const followUpTypeEnum = pgEnum("follow_up_type", followUpTypes);
@@ -75,8 +75,8 @@ export const activityKinds = [
   "note_added",
   "follow_up_created",
   "follow_up_done",
-  "booking_received",
-  "booking_status",
+  "kirtan_booking_received",
+  "kirtan_booking_status",
   "query_received",
   "whatsapp_sent",
   "updated",

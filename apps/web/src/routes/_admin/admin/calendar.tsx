@@ -11,7 +11,13 @@ import {
   startOfMonth,
   startOfWeek,
 } from "date-fns";
-import { Check, ChevronLeft, ChevronRight, Mic2, Plus } from "lucide-react";
+import {
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  HandHeart,
+  Plus,
+} from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/admin/admin-shell";
@@ -28,7 +34,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { api, call } from "@/lib/api";
-import { cn, formatTime, STUDIO_TZ, titleCase, todayIst } from "@/lib/utils";
+import { eventLabel } from "@/lib/kirtan";
+import { cn, formatTime, IST_TZ, titleCase, todayIst } from "@/lib/utils";
 
 export const Route = createFileRoute("/_admin/admin/calendar")({
   component: CalendarPage,
@@ -36,7 +43,7 @@ export const Route = createFileRoute("/_admin/admin/calendar")({
 
 type Ev = {
   key: string;
-  kind: "follow_up" | "session";
+  kind: "follow_up" | "program";
   at: Date;
   title: string;
   sub: string;
@@ -45,8 +52,7 @@ type Ev = {
   id: number;
 };
 
-const istDay = (d: Date) =>
-  d.toLocaleDateString("en-CA", { timeZone: STUDIO_TZ });
+const istDay = (d: Date) => d.toLocaleDateString("en-CA", { timeZone: IST_TZ });
 
 const TYPE_COLOR: Record<string, string> = {
   call: "bg-blue-100 text-blue-800 border-blue-200",
@@ -54,7 +60,7 @@ const TYPE_COLOR: Record<string, string> = {
   visit: "bg-violet-100 text-violet-800 border-violet-200",
   email: "bg-slate-100 text-slate-800 border-slate-200",
   meeting: "bg-amber-100 text-amber-800 border-amber-200",
-  session: "bg-orange-500 text-white border-orange-600",
+  program: "bg-orange-500 text-white border-orange-600",
 };
 
 function CalendarPage() {
@@ -126,15 +132,15 @@ function CalendarPage() {
         done: f.status === "done",
       });
     }
-    for (const s of data?.sessions ?? []) {
+    for (const s of data?.programs ?? []) {
       if (!s.start) continue;
       push({
         key: `s${s.id}`,
         id: s.id,
-        kind: "session",
+        kind: "program",
         at: new Date(s.start),
         title: s.name,
-        sub: `Studio: ${s.projectTitle ?? "session"}${s.end ? ` → ${formatTime(s.end)}` : ""}`,
+        sub: `Kirtan: ${eventLabel(s.eventType)} · ${s.city}${s.end ? ` → ${formatTime(s.end)}` : ""}`,
         leadId: s.leadId,
         done: s.status === "completed",
       });
@@ -152,7 +158,7 @@ function CalendarPage() {
     <>
       <PageHeader
         title="Calendar"
-        description="Follow-ups and scheduled studio sessions. Click a day to add a follow-up."
+        description="Follow-ups and confirmed kirtan programs. Click a day to add a follow-up."
         actions={
           <div className="flex rounded-md border bg-white p-0.5">
             <Button
@@ -207,7 +213,8 @@ function CalendarPage() {
           </h2>
           <div className="hidden gap-2 text-xs md:flex">
             <span className="flex items-center gap-1">
-              <span className="size-2.5 rounded-sm bg-orange-500" /> Session
+              <span className="size-2.5 rounded-sm bg-orange-500" /> Kirtan
+              program
             </span>
             <span className="flex items-center gap-1">
               <span className="size-2.5 rounded-sm bg-blue-200" /> Follow-up
@@ -254,8 +261,8 @@ function CalendarPage() {
                         key={e.key}
                         className={cn(
                           "truncate rounded border px-1.5 py-0.5 text-[11px] leading-tight",
-                          e.kind === "session"
-                            ? TYPE_COLOR.session
+                          e.kind === "program"
+                            ? TYPE_COLOR.program
                             : (TYPE_COLOR[
                                 e.sub.split(":")[0]?.toLowerCase() ?? ""
                               ] ?? TYPE_COLOR.call),
@@ -310,8 +317,8 @@ function CalendarPage() {
                 key={e.key}
                 className="flex items-center gap-3 rounded-lg border p-3 text-sm"
               >
-                {e.kind === "session" ? (
-                  <Mic2 className="size-4 text-orange-500" />
+                {e.kind === "program" ? (
+                  <HandHeart className="size-4 text-orange-500" />
                 ) : (
                   <span className="size-2 rounded-full bg-blue-500" />
                 )}

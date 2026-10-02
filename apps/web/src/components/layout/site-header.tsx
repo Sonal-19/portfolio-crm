@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Menu, Mic2, X } from "lucide-react";
+import { HandHeart, Menu, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
 import { Logo } from "@/components/common/logo";
@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 
 const NAV = [
   { label: "About", hash: "about" },
-  { label: "Studio", hash: "studio" },
+  { label: "Kirtan", hash: "kirtan" },
   { label: "Latest", hash: "latest" },
   { label: "Blog", hash: "blog" },
   { label: "Contact", hash: "contact" },
@@ -63,8 +63,8 @@ export function SiteHeader() {
             asChild
             className="hidden rounded-full bg-gradient-to-r from-gold to-saffron text-navy shadow-md hover:opacity-90 sm:inline-flex"
           >
-            <Link to="/studio/book">
-              <Mic2 /> Book Free Session
+            <Link to="/kirtan/book">
+              <HandHeart /> Book Kirtan
             </Link>
           </Button>
           <button
@@ -103,8 +103,8 @@ export function SiteHeader() {
                 asChild
                 className="mt-2 rounded-full bg-gradient-to-r from-gold to-saffron text-navy"
               >
-                <Link to="/studio/book" onClick={() => setOpen(false)}>
-                  <Mic2 /> Book Free Studio Session
+                <Link to="/kirtan/book" onClick={() => setOpen(false)}>
+                  <HandHeart /> Book Kirtan
                 </Link>
               </Button>
             </div>

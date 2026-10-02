@@ -1,7 +1,14 @@
 import { Image } from "bun";
 import { UPLOADS_DIR } from "$/env";
 
-export type UploadFolder = "brand" | "gallery" | "blog" | "studio" | "social";
+export const uploadFolders = [
+  "brand",
+  "gallery",
+  "blog",
+  "releases",
+  "social",
+] as const;
+export type UploadFolder = (typeof uploadFolders)[number];
 
 const WEBP_QUALITY = 80;
 const MAX_SIZE_MB = 8;

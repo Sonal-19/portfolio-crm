@@ -1,8 +1,8 @@
-import type { StudioGalleryItem } from "@api/db/schema";
+import type { GalleryItem } from "@api/db/schema";
 import { ArrowDown, ArrowUp, Images, Plus, Trash2 } from "lucide-react";
 import { Field } from "@/components/common/field";
 import { NativeSelect } from "@/components/common/native-select";
-import { GALLERY_ICONS } from "@/components/landing/studio-section";
+import { GALLERY_ICONS } from "@/components/landing/kirtan-section";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,17 +11,17 @@ import { titleCase } from "@/lib/utils";
 import { ImageUpload } from "./image-upload";
 
 const MAX_ITEMS = 12;
-const ICON_KEYS = Object.keys(GALLERY_ICONS) as StudioGalleryItem["icon"][];
+const ICON_KEYS = Object.keys(GALLERY_ICONS) as GalleryItem["icon"][];
 
-/** Settings card: the "Inside our studio" photo cards on the home page. */
-export function StudioGalleryEditor({
+/** Settings card: the "Kirtan moments" photo cards on the home page. */
+export function GalleryEditor({
   items,
   onChange,
 }: {
-  items: StudioGalleryItem[];
-  onChange: (items: StudioGalleryItem[]) => void;
+  items: GalleryItem[];
+  onChange: (items: GalleryItem[]) => void;
 }) {
-  const update = (i: number, patch: Partial<StudioGalleryItem>) =>
+  const update = (i: number, patch: Partial<GalleryItem>) =>
     onChange(items.map((it, idx) => (idx === i ? { ...it, ...patch } : it)));
   const move = (i: number, dir: -1 | 1) => {
     const next = [...items];
@@ -35,11 +35,11 @@ export function StudioGalleryEditor({
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <h2 className="flex items-center gap-2 font-semibold text-navy">
-            <Images className="size-4" /> Studio photos
+            <Images className="size-4" /> Kirtan moments (gallery)
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Photo cards shown under "World-Class Studio Facilities" on the home
-            page, in this order. Cards without a photo are skipped.
+            Photo cards shown under "Kirtan moments" in the home page's Kirtan
+            section, in this order. Cards without a photo are skipped.
           </p>
         </div>
         <Button
@@ -49,7 +49,7 @@ export function StudioGalleryEditor({
           onClick={() =>
             onChange([
               ...items,
-              { imagePath: "", title: "", description: "", icon: "mic" },
+              { imagePath: "", title: "", description: "", icon: "khanda" },
             ])
           }
         >
@@ -59,7 +59,7 @@ export function StudioGalleryEditor({
 
       {items.length === 0 && (
         <p className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
-          No studio photos yet. The facilities section is hidden on the website.
+          No photos yet. The gallery is hidden on the website.
         </p>
       )}
 
@@ -107,7 +107,7 @@ export function StudioGalleryEditor({
               </div>
             </div>
             <ImageUpload
-              folder="studio"
+              folder="gallery"
               aspect="aspect-[16/10]"
               value={it.imagePath || null}
               onChange={(p) => update(i, { imagePath: p ?? "" })}
@@ -126,7 +126,7 @@ export function StudioGalleryEditor({
                   value={it.icon}
                   onChange={(e) =>
                     update(i, {
-                      icon: e.target.value as StudioGalleryItem["icon"],
+                      icon: e.target.value as GalleryItem["icon"],
                     })
                   }
                 >

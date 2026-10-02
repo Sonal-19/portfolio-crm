@@ -16,18 +16,17 @@ export const LEAD_STATUS_TONE: Record<string, Tone> = {
   new: "blue",
   contacted: "violet",
   follow_up: "amber",
-  shortlisted: "orange",
-  recorded: "green",
+  confirmed: "orange",
+  completed: "green",
   closed: "gray",
 };
 
-export const BOOKING_STATUS_TONE: Record<string, Tone> = {
-  pending: "amber",
-  under_review: "violet",
-  approved: "blue",
-  scheduled: "orange",
+export const KIRTAN_STATUS_TONE: Record<string, Tone> = {
+  new: "amber",
+  contacted: "violet",
+  confirmed: "orange",
   completed: "green",
-  rejected: "red",
+  declined: "red",
   cancelled: "gray",
 };
 
@@ -38,7 +37,7 @@ export const PRIORITY_TONE: Record<string, Tone> = {
 };
 
 export const SOURCE_TONE: Record<string, Tone> = {
-  booking: "orange",
+  kirtan_booking: "orange",
   query: "blue",
   manual: "gray",
   whatsapp: "green",

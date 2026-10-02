@@ -219,8 +219,8 @@ export const adminWhatsappController = new Elysia({
       })),
       {
         kind: "site" as const,
-        label: "Book a free studio session",
-        url: `${PUBLIC_SITE_URL}/studio/book`,
+        label: "Book Kirtan (request form)",
+        url: `${PUBLIC_SITE_URL}/kirtan/book`,
       },
     ]);
   })

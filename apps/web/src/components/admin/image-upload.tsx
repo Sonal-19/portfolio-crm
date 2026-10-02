@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { api, call } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
-type Folder = "brand" | "gallery" | "blog" | "studio" | "social";
+type Folder = "brand" | "gallery" | "blog" | "releases" | "social";
 
 /** Uploads to the API (converted to WebP) and returns the stored /uploads/… path. */
 export function ImageUpload({

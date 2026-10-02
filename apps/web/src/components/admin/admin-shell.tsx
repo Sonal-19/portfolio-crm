@@ -1,16 +1,16 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   CalendarDays,
+  Disc3,
   ExternalLink,
+  HandHeart,
   Inbox,
   LayoutDashboard,
   LogOut,
   Menu,
-  Mic2,
   Newspaper,
   Settings,
   Share2,
-  SlidersHorizontal,
   Users,
   X,
 } from "lucide-react";
@@ -29,13 +29,18 @@ const NAV = [
       { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
       { to: "/admin/leads", label: "Leads", icon: Users },
       { to: "/admin/calendar", label: "Calendar", icon: CalendarDays },
-      { to: "/admin/bookings", label: "Studio Requests", icon: Mic2 },
+      {
+        to: "/admin/kirtan-bookings",
+        label: "Kirtan Bookings",
+        icon: HandHeart,
+      },
       { to: "/admin/queries", label: "Queries", icon: Inbox },
     ],
   },
   {
     group: "Engage",
     items: [
+      { to: "/admin/releases", label: "Releases", icon: Disc3 },
       { to: "/admin/whatsapp", label: "WhatsApp", icon: FaWhatsapp },
       { to: "/admin/blog", label: "Blog", icon: Newspaper },
       { to: "/admin/social", label: "Social Feed", icon: Share2 },
@@ -43,10 +48,7 @@ const NAV = [
   },
   {
     group: "Setup",
-    items: [
-      { to: "/admin/studio", label: "Studio Catalog", icon: SlidersHorizontal },
-      { to: "/admin/settings", label: "Settings", icon: Settings },
-    ],
+    items: [{ to: "/admin/settings", label: "Settings", icon: Settings }],
   },
 ] as const;
 

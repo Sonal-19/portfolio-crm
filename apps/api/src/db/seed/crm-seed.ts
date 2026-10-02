@@ -1,15 +1,18 @@
 import type { TX } from "$/db";
 import {
-  type ArtistType,
-  type BookingStatus,
   contactQueriesTable,
   followUpsTable,
+  type KirtanBookingStatus,
+  type KirtanEventType,
+  type KirtanRequirement,
+  kirtanBookingsTable,
   type LeadSource,
   type LeadStatus,
   leadActivitiesTable,
   leadNotesTable,
   leadsTable,
-  studioBookingsTable,
+  type SangatSize,
+  type VenueType,
   waBroadcastListMembersTable,
   waBroadcastListsTable,
   waTemplatesTable,
@@ -41,28 +44,29 @@ const leads: LeadSeed[] = [
     name: "Jaskaran Singh",
     phone: "919814000101",
     city: "Amritsar",
-    source: "booking",
+    source: "kirtan_booking",
     status: "new",
-    tags: ["studio", "raagi"],
+    tags: ["kirtan", "sukhmani_sahib", "amritsar"],
     daysAgo: 1,
     priority: "high",
   },
   {
-    name: "Bhai Manpreet Singh Jatha",
+    name: "Gurdwara Guru Nanak Darbar, Ulhasnagar",
     phone: "919814000102",
-    city: "Patiala",
-    source: "booking",
+    city: "Ulhasnagar",
+    source: "kirtan_booking",
     status: "contacted",
-    tags: ["studio", "kirtani_jatha"],
+    tags: ["kirtan", "prabhat_pheri", "ulhasnagar"],
     daysAgo: 3,
+    priority: "high",
   },
   {
     name: "Simran Kaur",
     phone: "919814000103",
     city: "Ludhiana",
-    source: "booking",
-    status: "shortlisted",
-    tags: ["studio", "singer"],
+    source: "kirtan_booking",
+    status: "confirmed",
+    tags: ["kirtan", "anand_karaj", "ludhiana"],
     daysAgo: 6,
     priority: "high",
   },
@@ -70,18 +74,18 @@ const leads: LeadSeed[] = [
     name: "Harpreet Singh",
     phone: "919814000104",
     city: "Jalandhar",
-    source: "booking",
-    status: "recorded",
-    tags: ["studio", "raagi"],
+    source: "kirtan_booking",
+    status: "completed",
+    tags: ["kirtan", "akhand_path_bhog", "jalandhar"],
     daysAgo: 21,
   },
   {
-    name: "Gurbani Youth Band",
+    name: "Mumbai Sikh Sangat Trust",
     phone: "919814000105",
-    city: "Mohali",
-    source: "booking",
+    city: "Mumbai",
+    source: "kirtan_booking",
     status: "follow_up",
-    tags: ["studio", "band"],
+    tags: ["kirtan", "silent_kirtan", "mumbai"],
     daysAgo: 4,
   },
   {
@@ -154,26 +158,26 @@ const leads: LeadSeed[] = [
     phone: "919814000113",
     city: "Moga",
     source: "manual",
-    status: "recorded",
-    tags: ["studio", "raagi"],
+    status: "completed",
+    tags: ["kirtan", "griha_pravesh"],
     daysAgo: 35,
   },
   {
     name: "Ravneet Kaur",
     phone: "919814000114",
-    city: "Chandigarh",
-    source: "booking",
+    city: "Delhi",
+    source: "kirtan_booking",
     status: "new",
-    tags: ["studio", "singer"],
+    tags: ["kirtan", "birthday_anniversary", "delhi"],
     daysAgo: 0,
   },
   {
-    name: "Bhai Satnam Singh Ragi",
+    name: "Gurdwara Sri Guru Singh Sabha, Amritsar",
     phone: "919814000115",
-    city: "Anandpur Sahib",
-    source: "booking",
-    status: "shortlisted",
-    tags: ["studio", "raagi"],
+    city: "Amritsar",
+    source: "kirtan_booking",
+    status: "confirmed",
+    tags: ["kirtan", "gurpurab", "amritsar"],
     daysAgo: 10,
   },
   {
@@ -182,7 +186,7 @@ const leads: LeadSeed[] = [
     city: "Phagwara",
     source: "manual",
     status: "closed",
-    tags: ["studio"],
+    tags: ["kirtan"],
     daysAgo: 50,
     priority: "low",
   },
@@ -210,21 +214,21 @@ const leads: LeadSeed[] = [
     city: "Sangrur",
     source: "whatsapp",
     status: "follow_up",
-    tags: ["whatsapp", "studio"],
+    tags: ["whatsapp", "kirtan"],
     daysAgo: 6,
   },
   {
     name: "Arshdeep Singh",
     phone: "919814000120",
     city: "Ludhiana",
-    source: "booking",
-    status: "contacted",
-    tags: ["studio", "singer"],
+    source: "kirtan_booking",
+    status: "closed",
+    tags: ["kirtan", "business_opening", "ludhiana"],
     daysAgo: 2,
   },
 ];
 
-export async function crmSeed(tx: TX, packageIds: number[], adminId: number) {
+export async function crmSeed(tx: TX, adminId: number) {
   console.info("Seeding CRM data...");
   const inserted = await tx
     .insert(leadsTable)
@@ -263,142 +267,187 @@ export async function crmSeed(tx: TX, packageIds: number[], adminId: number) {
     })),
   );
 
-  // Studio bookings
+  // Kirtan bookings
   type B = {
     who: string;
-    artistType: ArtistType;
-    pkg: number | null;
-    status: BookingStatus;
-    title: string;
-    preferred: number;
+    eventType: KirtanEventType;
+    subject: string;
+    status: KirtanBookingStatus;
+    day: number;
     time: string;
-    scheduleDay?: number;
-    scheduleTime?: string;
     duration: number;
-    sample?: string;
+    venueType: VenueType;
+    venueName?: string;
+    address: string;
+    state: string;
+    sangat: SangatSize;
+    requirements: KirtanRequirement[];
+    confirmed?: boolean;
+    message?: string;
     remark?: string;
   };
   const bookings: B[] = [
     {
       who: "Jaskaran Singh",
-      artistType: "raagi",
-      pkg: packageIds[0] ?? null,
-      status: "pending",
-      title: "Shabad: Mere Man Lochai",
-      preferred: 5,
-      time: "11:00",
+      eventType: "sukhmani_sahib",
+      subject: "Sukhmani Sahib path & kirtan at home",
+      status: "new",
+      day: 9,
+      time: "10:00",
       duration: 2,
-      sample: "https://youtube.com/@jaskaransingh",
+      venueType: "home",
+      address: "House 42, Ranjit Avenue",
+      state: "Punjab",
+      sangat: "under_50",
+      requirements: ["need_sound"],
+      message:
+        "Path is for our new home. Family would love Bhai Sahib's kirtan.",
     },
     {
       who: "Ravneet Kaur",
-      artistType: "singer",
-      pkg: null,
-      status: "pending",
-      title: "Devotional single",
-      preferred: 7,
-      time: "15:00",
-      duration: 3,
+      eventType: "birthday_anniversary",
+      subject: "Kirtan on parents' 50th anniversary",
+      status: "new",
+      day: 18,
+      time: "17:00",
+      duration: 2,
+      venueType: "banquet_hall",
+      venueName: "Grand Banquets",
+      address: "Rajouri Garden",
+      state: "Delhi",
+      sangat: "50_200",
+      requirements: ["sound_available", "langar_arranged"],
     },
     {
-      who: "Bhai Manpreet Singh Jatha",
-      artistType: "kirtani_jatha",
-      pkg: packageIds[1] ?? null,
-      status: "under_review",
-      title: "Kirtan album – 6 shabads",
-      preferred: 10,
-      time: "10:00",
-      duration: 8,
+      who: "Gurdwara Guru Nanak Darbar, Ulhasnagar",
+      eventType: "prabhat_pheri",
+      subject: "Gurpurab Prabhat Pheri & Silent Kirtan",
+      status: "contacted",
+      day: 30,
+      time: "03:00",
+      duration: 2,
+      venueType: "gurdwara",
+      venueName: "Gurdwara Guru Nanak Darbar",
+      address: "Camp No. 3",
+      state: "Maharashtra",
+      sangat: "500_plus",
+      requirements: ["silent_kirtan_headphones", "live_stream"],
+      message:
+        "Like last year's record event, we want daily Prabhat Pheri before Guru Nanak Jayanti.",
     },
     {
       who: "Simran Kaur",
-      artistType: "singer",
-      pkg: packageIds[2] ?? null,
-      status: "scheduled",
-      title: "Shabad with mix & master",
-      preferred: 2,
-      time: "14:00",
-      scheduleDay: 2,
-      scheduleTime: "14:00",
-      duration: 4,
-      remark: "Beautiful voice. Bring harmonium tuned.",
+      eventType: "anand_karaj",
+      subject: "Anand Karaj kirtan",
+      status: "confirmed",
+      day: 2,
+      time: "09:30",
+      duration: 3,
+      venueType: "gurdwara",
+      venueName: "Gurdwara Dukh Niwaran Sahib",
+      address: "Model Town",
+      state: "Punjab",
+      sangat: "200_500",
+      requirements: ["sound_available", "langar_arranged"],
+      confirmed: true,
+      remark: "Laavan at 10:30. Family will arrange transport from Ludhiana.",
     },
     {
-      who: "Bhai Satnam Singh Ragi",
-      artistType: "raagi",
-      pkg: packageIds[0] ?? null,
-      status: "scheduled",
-      title: "Raag Asa shabad",
-      preferred: 0,
-      time: "11:00",
-      scheduleDay: 0,
-      scheduleTime: "11:00",
-      duration: 2,
+      who: "Gurdwara Sri Guru Singh Sabha, Amritsar",
+      eventType: "gurpurab",
+      subject: "Gurpurab evening kirtan darbar",
+      status: "confirmed",
+      day: 0,
+      time: "19:00",
+      duration: 3,
+      venueType: "gurdwara",
+      venueName: "Gurdwara Sri Guru Singh Sabha",
+      address: "Lawrence Road",
+      state: "Punjab",
+      sangat: "500_plus",
+      requirements: ["sound_available", "live_stream"],
+      confirmed: true,
     },
     {
       who: "Harpreet Singh",
-      artistType: "raagi",
-      pkg: packageIds[3] ?? null,
+      eventType: "akhand_path_bhog",
+      subject: "Akhand Path bhog kirtan",
       status: "completed",
-      title: "Music video – Gurpurab special",
-      preferred: -14,
+      day: -14,
       time: "10:00",
-      scheduleDay: -14,
-      scheduleTime: "10:00",
-      duration: 6,
+      duration: 2,
+      venueType: "home",
+      address: "Urban Estate Phase 2",
+      state: "Punjab",
+      sangat: "50_200",
+      requirements: ["need_sound"],
+      confirmed: true,
     },
     {
-      who: "Gurbani Youth Band",
-      artistType: "band",
-      pkg: null,
-      status: "rejected",
-      title: "Fusion track",
-      preferred: 3,
-      time: "17:00",
-      duration: 3,
-      remark: "Please share a devotional track sample and re-apply.",
+      who: "Mumbai Sikh Sangat Trust",
+      eventType: "silent_kirtan",
+      subject: "Silent Kirtan for Amritvela samagam",
+      status: "contacted",
+      day: 45,
+      time: "04:00",
+      duration: 2,
+      venueType: "open_ground",
+      venueName: "Shivaji Park",
+      address: "Dadar West",
+      state: "Maharashtra",
+      sangat: "500_plus",
+      requirements: ["silent_kirtan_headphones"],
     },
     {
       who: "Arshdeep Singh",
-      artistType: "singer",
-      pkg: packageIds[0] ?? null,
-      status: "approved",
-      title: "First shabad recording",
-      preferred: 12,
-      time: "12:00",
-      duration: 2,
+      eventType: "business_opening",
+      subject: "Kirtan for new showroom opening",
+      status: "declined",
+      day: 3,
+      time: "11:00",
+      duration: 1,
+      venueType: "other",
+      venueName: "Arsh Motors",
+      address: "Ferozepur Road",
+      state: "Punjab",
+      sangat: "under_50",
+      requirements: [],
+      remark:
+        "Jatha already booked at Amritsar that day. Shared alternate dates.",
     },
   ];
   const bookingRows = await tx
-    .insert(studioBookingsTable)
+    .insert(kirtanBookingsTable)
     .values(
       bookings.map((b) => {
         const l = lead(b.who);
-        const scheduledStart =
-          b.scheduleDay !== undefined && b.scheduleTime
-            ? istDate(istDayOffset(b.scheduleDay), b.scheduleTime)
-            : null;
+        const scheduledStart = b.confirmed
+          ? istDate(istDayOffset(b.day), b.time)
+          : null;
         return {
           leadId: l.id,
           name: l.name,
           phone: l.phone,
-          city: l.city,
-          artistType: b.artistType,
-          experience: "5+ years of kirtan seva",
-          sampleLink: b.sample ?? null,
-          about: "Would love to record Gurbani professionally.",
-          packageId: b.pkg,
-          instrumentIds: b.pkg ? [] : [1, 2],
-          engineerId: 1,
-          addonIds: b.pkg ? [] : [1, 2],
+          whatsapp: l.phone,
+          eventType: b.eventType,
+          subject: b.subject,
+          language: "either" as const,
+          expectedSangat: b.sangat,
+          requirements: b.requirements,
+          message: b.message ?? null,
+          referralSource: "YouTube",
+          eventDate: istDayOffset(b.day),
+          startTime: b.time,
           durationHours: b.duration,
-          projectTitle: b.title,
-          preferredDate: istDayOffset(b.preferred),
-          preferredStartTime: b.time,
           scheduledStart,
           scheduledEnd: scheduledStart
             ? new Date(scheduledStart.getTime() + b.duration * H)
             : null,
+          venueType: b.venueType,
+          venueName: b.venueName ?? null,
+          address: b.address,
+          city: l.city ?? "",
+          state: b.state,
           status: b.status,
           adminRemark: b.remark ?? null,
           createdAt: l.createdAt,
@@ -410,16 +459,16 @@ export async function crmSeed(tx: TX, packageIds: number[], adminId: number) {
     bookingRows.flatMap((b) => [
       {
         leadId: b.leadId as number,
-        kind: "booking_received" as const,
-        message: `Studio request #${b.id}: ${b.projectTitle}`,
+        kind: "kirtan_booking_received" as const,
+        message: `Kirtan request #${b.id}: ${b.subject} — ${b.city}`,
         createdAt: b.createdAt,
       },
-      ...(b.status !== "pending"
+      ...(b.status !== "new"
         ? [
             {
               leadId: b.leadId as number,
-              kind: "booking_status" as const,
-              message: `Studio request #${b.id} ${b.status.replace("_", " ")}`,
+              kind: "kirtan_booking_status" as const,
+              message: `Kirtan booking #${b.id} ${b.status}`,
               adminId,
               createdAt: new Date(b.createdAt.getTime() + 6 * H),
             },
@@ -485,12 +534,12 @@ export async function crmSeed(tx: TX, packageIds: number[], adminId: number) {
   // Remarks
   const notes: [string, string][] = [
     [
-      "Bhai Manpreet Singh Jatha",
-      "Spoke on phone. Jatha has 3 members, wants to record 6 shabads. Checking studio full-day availability.",
+      "Gurdwara Guru Nanak Darbar, Ulhasnagar",
+      "Spoke to the pardhan ji. Want a repeat of the 43-day Prabhat Pheri with Silent Kirtan headphones. Need sangat count for headphones.",
     ],
     [
       "Simran Kaur",
-      "Very talented. Sent sample on WhatsApp; approved for a recording slot.",
+      "Anand Karaj confirmed. Family will arrange transport; jatha of 4 + sound engineer.",
     ],
     [
       "Gurdwara Singh Sabha Committee",
@@ -498,7 +547,7 @@ export async function crmSeed(tx: TX, packageIds: number[], adminId: number) {
     ],
     [
       "Harpreet Singh",
-      "Session done. Video edit delivered. Asked to tag our page when publishing.",
+      "Bhog kirtan done. Family very happy, shared video on Facebook and tagged our page.",
     ],
     [
       "Rajinder Singh Bedi",
@@ -532,7 +581,7 @@ export async function crmSeed(tx: TX, packageIds: number[], adminId: number) {
       0,
       11,
       "call",
-      "Review studio request & call back",
+      "Call back about Sukhmani Sahib kirtan",
       "pending",
     ],
     [
@@ -560,11 +609,11 @@ export async function crmSeed(tx: TX, packageIds: number[], adminId: number) {
       "pending",
     ],
     [
-      "Bhai Manpreet Singh Jatha",
+      "Gurdwara Guru Nanak Darbar, Ulhasnagar",
       1,
       11,
       "call",
-      "Confirm album day slot",
+      "Confirm headphone count & Prabhat Pheri route",
       "pending",
     ],
     [
@@ -572,15 +621,15 @@ export async function crmSeed(tx: TX, packageIds: number[], adminId: number) {
       2,
       17,
       "whatsapp",
-      "Send studio application link",
+      "Send Book Kirtan form link",
       "pending",
     ],
     [
-      "Gurbani Youth Band",
+      "Mumbai Sikh Sangat Trust",
       3,
       12,
       "call",
-      "Discuss devotional track re-application",
+      "Discuss Silent Kirtan arrangements",
       "pending",
     ],
     [
@@ -607,8 +656,8 @@ export async function crmSeed(tx: TX, packageIds: number[], adminId: number) {
       "Reply about harmonium classes",
       "pending",
     ],
-    ["Harpreet Singh", -10, 12, "call", "Feedback on video", "done"],
-    ["Tejinder Pal Singh", -5, 11, "whatsapp", "Sent studio info", "done"],
+    ["Harpreet Singh", -10, 12, "call", "Feedback on bhog kirtan", "done"],
+    ["Tejinder Pal Singh", -5, 11, "whatsapp", "Sent program schedule", "done"],
   ];
   await tx.insert(followUpsTable).values(
     fu.map(([who, day, hour, type, title, status]) => ({
@@ -630,9 +679,9 @@ export async function crmSeed(tx: TX, packageIds: number[], adminId: number) {
       body: "Waheguru Ji Ka Khalsa, Waheguru Ji Ki Fateh {{name}} ji 🙏\n\nGurpurab diyan lakh lakh vadhaiyan! Join us for kirtan this week.\n{{link}}",
     },
     {
-      name: "Studio application follow-up",
+      name: "Kirtan request follow-up",
       category: "followup",
-      body: "Sat Sri Akal {{name}} ji 🙏 Thank you for applying to record at our studio. Could you share a short sample (voice note or YouTube link) so we can schedule your free session?",
+      body: "Waheguru Ji Ka Khalsa, Waheguru Ji Ki Fateh {{name}} ji 🙏 Thank you for inviting Bhai Gurpreet Singh Ji for kirtan. When is a good time to call and plan the program?",
     },
     {
       name: "Share new release",
@@ -640,9 +689,9 @@ export async function crmSeed(tx: TX, packageIds: number[], adminId: number) {
       body: "Sat Sri Akal {{name}} ji 🙏 Bhai Gurpreet Singh Ji Shimla Wale's new shabad is out now. Please listen and share with sangat:\n{{link}}",
     },
     {
-      name: "Session reminder",
+      name: "Program reminder",
       category: "followup",
-      body: "Sat Sri Akal {{name}} ji, a reminder of your studio session tomorrow at Ghanta Ghar, Ludhiana. Please arrive 15 minutes early with your instruments tuned. 🙏",
+      body: "Sat Sri Akal {{name}} ji 🙏 A reminder that the jatha will reach your venue tomorrow for kirtan. Please share the exact location pin and a contact person on WhatsApp.",
     },
   ]);
   const lists = await tx
@@ -653,8 +702,8 @@ export async function crmSeed(tx: TX, packageIds: number[], adminId: number) {
         description: "Raagis and kirtani jathas we work with",
       },
       {
-        name: "Studio Clients",
-        description: "Everyone who applied to record at the studio",
+        name: "Kirtan Hosts",
+        description: "Families and committees who booked kirtan",
       },
       {
         name: "Gurpurab Updates",
@@ -662,13 +711,13 @@ export async function crmSeed(tx: TX, packageIds: number[], adminId: number) {
       },
     ])
     .returning();
-  const [raagi, studio, gurpurab] = lists;
+  const [raagi, hosts, gurpurab] = lists;
   const members: { listId: number; leadId: number }[] = [];
   for (const l of inserted) {
     if (raagi && (l.tags.includes("raagi") || l.tags.includes("kirtani_jatha")))
       members.push({ listId: raagi.id, leadId: l.id });
-    if (studio && l.tags.includes("studio"))
-      members.push({ listId: studio.id, leadId: l.id });
+    if (hosts && l.tags.includes("kirtan"))
+      members.push({ listId: hosts.id, leadId: l.id });
     if (gurpurab && (l.tags.includes("event") || l.tags.includes("query")))
       members.push({ listId: gurpurab.id, leadId: l.id });
   }

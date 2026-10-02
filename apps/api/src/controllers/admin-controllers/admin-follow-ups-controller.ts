@@ -5,8 +5,8 @@ import {
   followUpStatuses,
   followUpsTable,
   followUpTypes,
+  kirtanBookingsTable,
   leadsTable,
-  studioBookingsTable,
 } from "$/db/schema";
 import { leadService } from "$/lib/services/lead-service";
 import { fail, ok } from "$/lib/utils";
@@ -59,13 +59,13 @@ export const adminFollowUpsController = new Elysia({
       }),
     },
   )
-  /** Calendar feed: follow-ups plus scheduled studio sessions in [from, to). */
+  /** Calendar feed: follow-ups plus confirmed kirtan programs in [from, to). */
   .get(
     "/calendar",
     async ({ query }) => {
       const from = new Date(query.from);
       const to = new Date(query.to);
-      const [followUps, sessions] = await Promise.all([
+      const [followUps, programs] = await Promise.all([
         db
           .select(followUpCols)
           .from(followUpsTable)
@@ -74,7 +74,7 @@ export const adminFollowUpsController = new Elysia({
             and(
               gte(followUpsTable.dueAt, from),
               lt(followUpsTable.dueAt, to),
-              // session reminders are shown via the booking itself
+              // program reminders are shown via the booking itself
               inArray(followUpsTable.type, [
                 "call",
                 "whatsapp",
@@ -87,25 +87,27 @@ export const adminFollowUpsController = new Elysia({
           .orderBy(followUpsTable.dueAt),
         db
           .select({
-            id: studioBookingsTable.id,
-            leadId: studioBookingsTable.leadId,
-            name: studioBookingsTable.name,
-            projectTitle: studioBookingsTable.projectTitle,
-            status: studioBookingsTable.status,
-            start: studioBookingsTable.scheduledStart,
-            end: studioBookingsTable.scheduledEnd,
+            id: kirtanBookingsTable.id,
+            leadId: kirtanBookingsTable.leadId,
+            name: kirtanBookingsTable.name,
+            subject: kirtanBookingsTable.subject,
+            eventType: kirtanBookingsTable.eventType,
+            city: kirtanBookingsTable.city,
+            status: kirtanBookingsTable.status,
+            start: kirtanBookingsTable.scheduledStart,
+            end: kirtanBookingsTable.scheduledEnd,
           })
-          .from(studioBookingsTable)
+          .from(kirtanBookingsTable)
           .where(
             and(
-              inArray(studioBookingsTable.status, ["scheduled", "completed"]),
-              gte(studioBookingsTable.scheduledStart, from),
-              lt(studioBookingsTable.scheduledStart, to),
+              inArray(kirtanBookingsTable.status, ["confirmed", "completed"]),
+              gte(kirtanBookingsTable.scheduledStart, from),
+              lt(kirtanBookingsTable.scheduledStart, to),
             ),
           )
-          .orderBy(studioBookingsTable.scheduledStart),
+          .orderBy(kirtanBookingsTable.scheduledStart),
       ]);
-      return ok({ followUps, sessions });
+      return ok({ followUps, programs });
     },
     { query: t.Object({ from: t.String(), to: t.String() }) },
   )

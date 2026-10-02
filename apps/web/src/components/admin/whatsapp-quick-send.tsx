@@ -29,7 +29,7 @@ export function WhatsappQuickSend({
   phone: string;
 }) {
   const [open, setOpen] = useState(false);
-  const [link, setLink] = useState(`${window.location.origin}/studio/book`);
+  const [link, setLink] = useState(`${window.location.origin}/kirtan/book`);
   const [text, setText] = useState(`Sat Sri Akal ${name.split(" ")[0]} ji 🙏 `);
   const qc = useQueryClient();
   const { data: templates } = useQuery({

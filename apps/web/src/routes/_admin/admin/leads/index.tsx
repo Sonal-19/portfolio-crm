@@ -136,7 +136,7 @@ function LeadsPage() {
     <>
       <PageHeader
         title="Leads"
-        description="Everyone who booked the studio, sent a query, or was added by you."
+        description="Everyone who booked kirtan, sent a query, or was added by you."
         actions={
           <>
             <Button variant="outline" asChild>

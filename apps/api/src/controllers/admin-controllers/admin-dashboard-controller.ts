@@ -4,16 +4,16 @@ import { db } from "$/db";
 import {
   contactQueriesTable,
   followUpsTable,
+  kirtanBookingsTable,
   leadActivitiesTable,
   leadsTable,
-  studioBookingsTable,
 } from "$/db/schema";
 import { ok } from "$/lib/utils";
-import { istDayBounds } from "$/lib/utils/time";
+import { IST_TZ, istDayBounds } from "$/lib/utils/time";
 import { protectedAdmin } from "$/pre-processor";
 
 function todayIst() {
-  return new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
+  return new Date().toLocaleDateString("en-CA", { timeZone: IST_TZ });
 }
 
 export const adminDashboardController = new Elysia({
@@ -32,14 +32,14 @@ export const adminDashboardController = new Elysia({
     const [
       totalLeads,
       newLeadsWeek,
-      pendingApplications,
+      newKirtanRequests,
       followUpsToday,
       followUpsOverdue,
-      sessionsThisMonth,
+      programsThisMonth,
       unreadQueries,
       bySource,
       byStatus,
-      upcomingSessions,
+      upcomingPrograms,
       todaysFollowUps,
       recentActivity,
     ] = await Promise.all([
@@ -53,10 +53,8 @@ export const adminDashboardController = new Elysia({
       one(
         db
           .select({ n: count() })
-          .from(studioBookingsTable)
-          .where(
-            inArray(studioBookingsTable.status, ["pending", "under_review"]),
-          ),
+          .from(kirtanBookingsTable)
+          .where(inArray(kirtanBookingsTable.status, ["new", "contacted"])),
       ),
       one(
         db
@@ -84,11 +82,11 @@ export const adminDashboardController = new Elysia({
       one(
         db
           .select({ n: count() })
-          .from(studioBookingsTable)
+          .from(kirtanBookingsTable)
           .where(
             and(
-              eq(studioBookingsTable.status, "completed"),
-              gte(studioBookingsTable.updatedAt, monthStart),
+              inArray(kirtanBookingsTable.status, ["confirmed", "completed"]),
+              gte(kirtanBookingsTable.scheduledStart, monthStart),
             ),
           ),
       ),
@@ -108,21 +106,23 @@ export const adminDashboardController = new Elysia({
         .groupBy(leadsTable.status),
       db
         .select({
-          id: studioBookingsTable.id,
-          name: studioBookingsTable.name,
-          projectTitle: studioBookingsTable.projectTitle,
-          scheduledStart: studioBookingsTable.scheduledStart,
-          scheduledEnd: studioBookingsTable.scheduledEnd,
-          leadId: studioBookingsTable.leadId,
+          id: kirtanBookingsTable.id,
+          name: kirtanBookingsTable.name,
+          subject: kirtanBookingsTable.subject,
+          eventType: kirtanBookingsTable.eventType,
+          city: kirtanBookingsTable.city,
+          scheduledStart: kirtanBookingsTable.scheduledStart,
+          scheduledEnd: kirtanBookingsTable.scheduledEnd,
+          leadId: kirtanBookingsTable.leadId,
         })
-        .from(studioBookingsTable)
+        .from(kirtanBookingsTable)
         .where(
           and(
-            eq(studioBookingsTable.status, "scheduled"),
-            gte(studioBookingsTable.scheduledStart, now),
+            eq(kirtanBookingsTable.status, "confirmed"),
+            gte(kirtanBookingsTable.scheduledStart, now),
           ),
         )
-        .orderBy(studioBookingsTable.scheduledStart)
+        .orderBy(kirtanBookingsTable.scheduledStart)
         .limit(5),
       db
         .select({
@@ -159,23 +159,23 @@ export const adminDashboardController = new Elysia({
         .limit(10),
     ]);
 
-    const recorded = byStatus.find((s) => s.key === "recorded")?.n ?? 0;
+    const completed = byStatus.find((s) => s.key === "completed")?.n ?? 0;
     return ok({
       kpis: {
         totalLeads,
         newLeadsWeek,
-        pendingApplications,
+        newKirtanRequests,
         followUpsToday,
         followUpsOverdue,
-        sessionsThisMonth,
+        programsThisMonth,
         unreadQueries,
-        recordedRate: totalLeads
-          ? Math.round((recorded / totalLeads) * 100)
+        completedRate: totalLeads
+          ? Math.round((completed / totalLeads) * 100)
           : 0,
       },
       bySource,
       byStatus,
-      upcomingSessions,
+      upcomingPrograms,
       todaysFollowUps,
       recentActivity,
       serverTime: now,

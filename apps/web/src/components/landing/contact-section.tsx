@@ -1,9 +1,9 @@
 import { useMutation } from "@tanstack/react-query";
 import {
+  HandHeart,
   Mail,
   MapPin,
   MessageSquareText,
-  Mic2,
   Phone,
   Send,
 } from "lucide-react";
@@ -13,7 +13,7 @@ import { toast } from "sonner";
 import { Field } from "@/components/common/field";
 import { SectionHeading } from "@/components/common/section-heading";
 import { Spinner } from "@/components/common/states";
-import { BookingWizard } from "@/components/studio/booking-wizard";
+import { KirtanBookingForm } from "@/components/kirtan/kirtan-booking-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -128,14 +128,14 @@ function QueryForm() {
 }
 
 export function ContactSection({ s }: { s?: SiteSettings }) {
-  const [tab, setTab] = useState<"query" | "record">("query");
+  const [tab, setTab] = useState<"query" | "kirtan">("query");
   return (
     <section id="contact" className="bg-white py-20 sm:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <SectionHeading
           kicker="Get in touch"
-          title="Contact & Record with Us"
-          subtitle="Send us a query, or book time at our professional recording studio. It's free for talented artists."
+          title="Contact & Book Kirtan"
+          subtitle="Send us a query, or invite Bhai Sahib and the jatha for kirtan at your gurdwara, home or function."
         />
 
         <div
@@ -148,7 +148,7 @@ export function ContactSection({ s }: { s?: SiteSettings }) {
               label: "Send a Query",
               Icon: MessageSquareText,
             },
-            { key: "record" as const, label: "Record with Us", Icon: Mic2 },
+            { key: "kirtan" as const, label: "Book Kirtan", Icon: HandHeart },
           ].map(({ key, label, Icon }) => (
             <button
               key={key}
@@ -169,19 +169,19 @@ export function ContactSection({ s }: { s?: SiteSettings }) {
         </div>
 
         <div className="mt-10">
-          {tab === "record" ? (
-            <BookingWizard />
+          {tab === "kirtan" ? (
+            <KirtanBookingForm />
           ) : (
             <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
               <QueryForm />
               <aside className="space-y-4">
                 <div className="space-y-4 rounded-3xl bg-navy p-6 text-sm text-cream/85">
                   <p className="font-brand text-xs tracking-[0.25em] text-gold-light">
-                    STUDIO & OFFICE
+                    OFFICE · AMRITVELA TRUST
                   </p>
                   <p className="flex gap-3">
                     <MapPin className="size-5 shrink-0 text-gold" />
-                    {s?.studioAddress}
+                    {s?.address}
                   </p>
                   {s?.phone && (
                     <p className="flex gap-3">
@@ -235,7 +235,7 @@ export function ContactSection({ s }: { s?: SiteSettings }) {
                 </div>
                 {s?.mapEmbedUrl && (
                   <iframe
-                    title="Studio location"
+                    title="Office location"
                     src={s.mapEmbedUrl}
                     loading="lazy"
                     referrerPolicy="no-referrer-when-downgrade"
