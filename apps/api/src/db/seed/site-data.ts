@@ -15,22 +15,22 @@ export const siteSettingsSeed: InsertSiteSettings = {
   aboutImagePath: "/uploads/brand/about-placeholder.svg",
   gallery: [
     {
-      imagePath: "/uploads/gallery/kirtan-1.svg",
-      title: "Amritvela Simran samagam",
+      imagePath: "/uploads/studio/studio-console.jpg",
+      title: "Mixing & mastering suite",
       description:
         "Sangat joins Naam Simran in the early hours, 3:00 to 5:00 AM.",
       icon: "khanda",
     },
     {
-      imagePath: "/uploads/gallery/kirtan-2.svg",
-      title: "Gurpurab kirtan darbar",
+      imagePath: "/uploads/studio/mic-booth.jpg",
+      title: "Acoustically treated vocal booth",
       description:
         "The full jatha with harmonium, tabla and a professional sound setup.",
       icon: "harmonium",
     },
     {
-      imagePath: "/uploads/gallery/kirtan-3.svg",
-      title: "Silent Kirtan, Ulhasnagar",
+      imagePath: "/uploads/studio/video-shoot.jpg",
+      title: "Music-video set & lighting",
       description:
         "World-record Prabhat Pheri with wireless headphones for the sangat.",
       icon: "headphones",

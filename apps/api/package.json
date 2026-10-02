@@ -11,6 +11,8 @@
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:seed": "bun src/db/seed/index.ts",
+    "db:seed:prod": "bun src/db/seed/prod.ts",
+    "db:baseline": "bun scripts/baseline-migrations.ts",
     "assets": "bun scripts/gen-assets.ts",
     "db:studio": "drizzle-kit studio --port 5566"
   },
