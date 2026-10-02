@@ -32,8 +32,8 @@ export const SOCIAL_KEYS = {
   fbPageToken: process.env.FB_PAGE_TOKEN || "",
   igUserId: process.env.IG_USER_ID || "",
   igToken: process.env.IG_TOKEN || "",
-  ytChannelId: process.env.YT_CHANNEL_ID || "",
-  ytApiKey: process.env.YT_API_KEY || "",
+  /** The channel itself is picked in Admin → Social feed, not here. */
+  ytApiKey: process.env.YOUTUBE_API_KEY || process.env.YT_API_KEY || "",
 };
 
 export const WA_CLOUD = {

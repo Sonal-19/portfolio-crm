@@ -9,6 +9,7 @@ export type SocialPostInput = {
   permalink: string;
   publishedAt: Date;
   stats: SocialStats;
+  sourceId?: string | null;
 };
 
 export interface SocialProvider {

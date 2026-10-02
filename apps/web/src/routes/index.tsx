@@ -5,7 +5,10 @@ import { ContactSection } from "@/components/landing/contact-section";
 import { HeroSection } from "@/components/landing/hero-section";
 import { KirtanSection } from "@/components/landing/kirtan-section";
 import { releasesQuery } from "@/components/landing/release-carousel";
-import { SocialFeedSection } from "@/components/landing/social-feed-section";
+import {
+  SocialFeedSection,
+  socialLayoutQuery,
+} from "@/components/landing/social-feed-section";
 import { PublicLayout } from "@/components/layout/public-layout";
 import { siteSettingsQuery, useSiteSettings } from "@/hooks/use-site-settings";
 
@@ -14,6 +17,7 @@ export const Route = createFileRoute("/")({
     Promise.all([
       context.queryClient.prefetchQuery(siteSettingsQuery),
       context.queryClient.prefetchQuery(releasesQuery),
+      context.queryClient.prefetchQuery(socialLayoutQuery),
     ]),
   component: HomePage,
 });

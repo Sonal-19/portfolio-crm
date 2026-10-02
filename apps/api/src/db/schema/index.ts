@@ -2,6 +2,7 @@ export * from "./auth/admins.sql";
 export * from "./auth/auths.sql";
 export * from "./content/blog-posts.sql";
 export * from "./content/releases.sql";
+export * from "./content/social-feeds.sql";
 export * from "./content/social-posts.sql";
 export * from "./crm/crm-records.sql";
 export * from "./crm/leads.sql";

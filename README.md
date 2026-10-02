@@ -38,9 +38,13 @@ Seeded admin: `admin@shimlawale.com` / `ChangeMe123!`. **Change it** in Admin �
 
 ## Going live with integrations
 
-- **Facebook / Instagram / YouTube**: set `FB_PAGE_ID`+`FB_PAGE_TOKEN`, `IG_USER_ID`+`IG_TOKEN`,
-  `YT_CHANNEL_ID`+`YT_API_KEY` in `apps/api/.env`. Each platform switches from demo data to its live
-  provider automatically and refreshes every 6h (or use "Sync now" in Admin → Social Feed).
+- **YouTube**: set `YOUTUBE_API_KEY` (YouTube Data API v3) in `apps/api/.env`, then add channels by
+  handle in Admin → Social Feed (test, pick videos / Shorts / live, order, rename, pause, pin). Videos
+  are cached in `social_posts`; the site only reads that cache. A background check refreshes it at the
+  interval chosen in the admin (default 6h, about 3 quota units per channel per refresh).
+- **Facebook / Instagram**: set `FB_PAGE_ID`+`FB_PAGE_TOKEN`, `IG_USER_ID`+`IG_TOKEN` in
+  `apps/api/.env`. Each switches from demo data to its live provider automatically. Until then, hide
+  their tabs with "Show on website" in Admin → Social Feed.
 - **WhatsApp**: messages currently open in WhatsApp via `wa.me` links (click-to-send). A
   `WaCloudApiSender` is ready in `wa-sender.ts` for the Meta Cloud API once a business number is verified.
 - **Email alerts** for new queries/bookings: set `SMTP_*` and `ADMIN_NOTIFY_EMAIL`.

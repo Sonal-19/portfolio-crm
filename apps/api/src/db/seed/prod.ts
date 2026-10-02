@@ -1,25 +1,11 @@
 import { count } from "drizzle-orm";
 import { db } from "$/db";
-import {
-  adminsTable,
-  blogPostsTable,
-  siteSettingsTable,
-  studioAddonsTable,
-  studioEngineersTable,
-  studioInstrumentsTable,
-  studioPackagesTable,
-} from "$/db/schema";
+import { adminsTable, blogPostsTable, siteSettingsTable } from "$/db/schema";
 import { blogSeed } from "./blog-data";
 import { siteSettingsSeed } from "./site-data";
-import {
-  addonsSeed,
-  engineersSeed,
-  instrumentsSeed,
-  packagesSeed,
-} from "./studio-data";
 
 // Production-safe seed: never truncates, only fills tables that are empty
-// (site settings, studio catalog, blog, first admin). No demo CRM data.
+// (site settings, blog, first admin). No demo CRM data.
 // Safe to run on every deploy.
 
 // biome-ignore lint/suspicious/noExplicitAny: generic table arg
@@ -54,18 +40,6 @@ await seedIfEmpty("admin", adminsTable, async () => {
 });
 await seedIfEmpty("site settings", siteSettingsTable, () =>
   db.insert(siteSettingsTable).values(siteSettingsSeed),
-);
-await seedIfEmpty("studio packages", studioPackagesTable, () =>
-  db.insert(studioPackagesTable).values(packagesSeed),
-);
-await seedIfEmpty("studio instruments", studioInstrumentsTable, () =>
-  db.insert(studioInstrumentsTable).values(instrumentsSeed),
-);
-await seedIfEmpty("studio engineers", studioEngineersTable, () =>
-  db.insert(studioEngineersTable).values(engineersSeed),
-);
-await seedIfEmpty("studio addons", studioAddonsTable, () =>
-  db.insert(studioAddonsTable).values(addonsSeed),
 );
 await seedIfEmpty("blog posts", blogPostsTable, () =>
   db

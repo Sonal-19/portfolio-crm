@@ -29,6 +29,10 @@ export const socialPostsTable = pgTable(
     publishedAt: pg.timestamp("published_at", { withTimezone: true }).notNull(),
     stats: pg.jsonb().$type<SocialStats>().notNull().default({}),
     isHidden: pg.boolean("is_hidden").notNull().default(false),
+    /** Pinned posts lead their platform's feed on the site. */
+    isPinned: pg.boolean("is_pinned").notNull().default(false),
+    /** Where a synced post came from: the YouTube channel id. */
+    sourceId: pg.text("source_id"),
     createdAt: pg
       .timestamp("created_at", { withTimezone: true })
       .defaultNow()

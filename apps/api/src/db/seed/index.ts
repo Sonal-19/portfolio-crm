@@ -34,6 +34,7 @@ async function mainSeed() {
         wa_broadcast_recipients, wa_broadcasts, wa_broadcast_list_members,
         wa_broadcast_lists, wa_templates, lead_activities, lead_notes,
         follow_ups, contact_queries, kirtan_bookings, leads, social_posts,
+        social_feeds, youtube_channels,
         blog_posts, releases, site_settings, auths, admins
       restart identity cascade
     `);

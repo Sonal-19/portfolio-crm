@@ -19,6 +19,7 @@ import {
 import { leadService } from "$/lib/services/lead-service";
 import { notifyService } from "$/lib/services/notify-service";
 import { clientIp, rateLimitService } from "$/lib/services/rate-limit-service";
+import { socialSyncService } from "$/lib/services/social/social-sync-service";
 import { fail, normalizePhone, ok } from "$/lib/utils";
 import { tEnum } from "$/lib/utils/schema";
 import { istDayBounds } from "$/lib/utils/time";
@@ -68,28 +69,37 @@ export const publicController = new Elysia({
       }),
     },
   )
+  /** Which tabs / channel filters the "Latest" section should offer. */
+  .get("/social/layout", async () => ok(await socialSyncService.publicLayout()))
+  /** Served from the social_posts cache; never calls a social API. */
   .get(
     "/social",
     async ({ query }) => {
       const limit = Math.min(Number(query.limit ?? 9), 30);
+      const { platforms } = await socialSyncService.publicLayout();
+      if (!platforms.includes(query.platform)) return ok([]);
       const rows = await db
         .select()
         .from(socialPostsTable)
         .where(
           and(
             eq(socialPostsTable.isHidden, false),
-            query.platform
-              ? eq(socialPostsTable.platform, query.platform)
+            eq(socialPostsTable.platform, query.platform),
+            query.source
+              ? eq(socialPostsTable.sourceId, query.source)
               : undefined,
           ),
         )
         .orderBy(desc(socialPostsTable.publishedAt))
-        .limit(limit);
-      return ok(rows);
+        .limit(300);
+      const arranged = await socialSyncService.arrange(query.platform, rows);
+      return ok(arranged.slice(0, limit));
     },
     {
       query: t.Object({
-        platform: t.Optional(tEnum(socialPlatforms)),
+        platform: tEnum(socialPlatforms),
+        /** YouTube channel id, to show just that channel. */
+        source: t.Optional(t.String({ maxLength: 64 })),
         limit: t.Optional(t.String()),
       }),
     },

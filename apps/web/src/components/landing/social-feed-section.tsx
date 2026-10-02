@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { queryOptions, useQuery } from "@tanstack/react-query";
 import { Heart, MessageCircle, Play } from "lucide-react";
 import { useState } from "react";
 import { FaFacebookF, FaInstagram, FaYoutube } from "react-icons/fa6";
@@ -22,14 +22,41 @@ const compact = (n?: number) =>
     ? ""
     : new Intl.NumberFormat("en-IN", { notation: "compact" }).format(n);
 
+/** Posts are cached on the server and change a few times a day at most. */
+const STALE_MS = 5 * 60 * 1000;
+
+export const socialLayoutQuery = queryOptions({
+  queryKey: ["public", "social", "layout"] as const,
+  queryFn: () => call(api.public.social.layout.get()),
+  staleTime: STALE_MS,
+});
+
 export function SocialFeedSection({ s }: { s?: SiteSettings }) {
-  const [tab, setTab] = useState<Platform>("youtube");
+  const [picked, setPicked] = useState<Platform>("youtube");
+  const [source, setSource] = useState<string | undefined>();
   const [playing, setPlaying] = useState<number | null>(null);
+  const { data: layout } = useQuery(socialLayoutQuery);
+
+  // Tabs the admin switched off in Admin → Social feed are left out.
+  const tabs = TABS.filter((t) => layout?.platforms.includes(t.key) ?? true);
+  const tab = tabs.some((t) => t.key === picked) ? picked : tabs[0]?.key;
+  const channels = tab === "youtube" ? (layout?.youtubeChannels ?? []) : [];
+  const channel = channels.some((c) => c.channelId === source)
+    ? source
+    : undefined;
+
   const { data, isLoading } = useQuery({
-    queryKey: ["public", "social", tab],
+    queryKey: ["public", "social", tab, channel ?? "all"],
     queryFn: () =>
-      call(api.public.social.get({ query: { platform: tab, limit: "6" } })),
+      call(
+        api.public.social.get({
+          query: { platform: tab ?? "youtube", source: channel, limit: "6" },
+        }),
+      ),
+    enabled: Boolean(tab),
+    staleTime: STALE_MS,
   });
+  if (!tab) return null;
 
   const profile =
     tab === "youtube"
@@ -38,6 +65,8 @@ export function SocialFeedSection({ s }: { s?: SiteSettings }) {
         ? s?.instagramUrl
         : s?.facebookUrl;
   const TabIcon = TABS.find((t) => t.key === tab)?.Icon ?? FaYoutube;
+  const names = tabs.map((t) => t.label);
+  const channelName = new Map(channels.map((c) => [c.channelId, c.name]));
 
   return (
     <section
@@ -49,21 +78,24 @@ export function SocialFeedSection({ s }: { s?: SiteSettings }) {
           tone="dark"
           kicker="Latest from the sangat"
           title="Kirtan, moments & updates"
-          subtitle="Fresh from YouTube, Instagram and Facebook."
+          subtitle={`Fresh from ${[names.slice(0, -1).join(", "), names.at(-1)].filter(Boolean).join(" and ")}.`}
         />
 
         <div
           role="tablist"
-          className="mx-auto mt-10 flex w-full max-w-md rounded-full border border-white/15 bg-white/5 p-1"
+          className={cn(
+            "mx-auto mt-10 flex w-full max-w-md rounded-full border border-white/15 bg-white/5 p-1",
+            tabs.length < 2 && "hidden",
+          )}
         >
-          {TABS.map(({ key, label, Icon }) => (
+          {tabs.map(({ key, label, Icon }) => (
             <button
               key={key}
               type="button"
               role="tab"
               aria-selected={tab === key}
               onClick={() => {
-                setTab(key);
+                setPicked(key);
                 setPlaying(null);
               }}
               className={cn(
@@ -79,10 +111,38 @@ export function SocialFeedSection({ s }: { s?: SiteSettings }) {
           ))}
         </div>
 
+        {channels.length > 1 && (
+          <div className="mt-6 flex flex-wrap justify-center gap-2">
+            {[{ channelId: undefined, name: "All" }, ...channels].map((c) => (
+              <button
+                key={c.channelId ?? "all"}
+                type="button"
+                aria-pressed={channel === c.channelId}
+                onClick={() => {
+                  setSource(c.channelId);
+                  setPlaying(null);
+                }}
+                className={cn(
+                  "rounded-full border px-3.5 py-1.5 text-xs font-medium transition",
+                  channel === c.channelId
+                    ? "border-gold bg-gold/15 text-gold-light"
+                    : "border-white/15 text-cream/70 hover:border-white/30 hover:text-cream",
+                )}
+              >
+                {c.name}
+              </button>
+            ))}
+          </div>
+        )}
+
         {isLoading ? (
           <div className="grid h-60 place-items-center">
             <Spinner />
           </div>
+        ) : data?.length === 0 ? (
+          <p className="grid h-40 place-items-center text-sm text-cream/60">
+            Nothing here yet. Check back soon.
+          </p>
         ) : (
           <div
             className={cn(
@@ -155,6 +215,11 @@ export function SocialFeedSection({ s }: { s?: SiteSettings }) {
                   >
                     {p.caption}
                   </p>
+                  {!channel && channels.length > 1 && p.sourceId && (
+                    <p className="mt-1 truncate text-xs text-gold-light/80">
+                      {channelName.get(p.sourceId)}
+                    </p>
+                  )}
                   <div className="mt-3 flex items-center gap-4 text-xs text-cream/50">
                     <span>{formatDate(p.publishedAt)}</span>
                     {p.stats.views !== undefined && (

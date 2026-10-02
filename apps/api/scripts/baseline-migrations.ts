@@ -2,8 +2,9 @@
 // migration journal). If the schema already exists but the journal is empty,
 // records the first (baseline) migration as applied so `drizzle-kit migrate`
 // only runs what comes after it. No-op otherwise.
-import { readdirSync, readFileSync } from "node:fs";
+
 import { createHash } from "node:crypto";
+import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { DATABASE_URL } from "../src/env";
 

@@ -3,9 +3,9 @@ import { Link } from "@tanstack/react-router";
 import {
   Disc3,
   ExternalLink,
+  HandHeart,
   HeartHandshake,
   Loader2,
-  HandHeart,
   Pause,
   Play,
   Volume2,
