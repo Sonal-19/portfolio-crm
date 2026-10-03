@@ -924,7 +924,7 @@ export function HeroSection({ s }: { s?: SiteSettings }) {
               whileHover={{ y: -3, scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               transition={{ type: "spring", stiffness: 350, damping: 25 }}
-              className="group relative z-30 -mt-8 sm:-mt-10 flex w-full max-w-[340px] sm:max-w-[420px] items-center justify-between gap-3 rounded-2xl border border-gold/35 bg-[#070b18]/95 p-3 sm:p-3.5 shadow-[0_15px_35px_rgba(0,0,0,0.75)] lg:backdrop-blur-xl transition-all duration-300 hover:border-gold hover:shadow-[0_0_25px_rgba(212,166,74,0.25)] cursor-pointer select-none"
+              className="group relative z-30 -mt-8 sm:-mt-10 flex w-full items-center justify-between gap-3 rounded-2xl border border-gold/35 bg-[#070b18]/95 p-3 sm:p-3.5 shadow-[0_15px_35px_rgba(0,0,0,0.75)] lg:backdrop-blur-xl transition-all duration-300 hover:border-gold hover:shadow-[0_0_25px_rgba(212,166,74,0.25)] cursor-pointer select-none"
             >
               <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
                 {/* Dedicated & Distinct Play / Pause Music Button */}

@@ -1,9 +1,9 @@
 {
   "version": "8",
   "dialect": "postgres",
-  "id": "dd0d8bdf-389e-49ab-98ac-6ca1ac54e287",
+  "id": "fb40a6be-7827-45a1-8fad-25b6ca789a3f",
   "prevIds": [
-    "00000000-0000-0000-0000-000000000000"
+    "4640b302-0a39-4488-aa11-40d89a5bd6dc"
   ],
   "ddl": [
     {
@@ -253,6 +253,18 @@
     {
       "isRlsEnabled": false,
       "name": "releases",
+      "entityType": "tables",
+      "schema": "public"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "social_feeds",
+      "entityType": "tables",
+      "schema": "public"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "youtube_channels",
       "entityType": "tables",
       "schema": "public"
     },
@@ -868,6 +880,344 @@
       "table": "releases"
     },
     {
+      "type": "social_platform",
+      "typeSchema": "public",
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "platform",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "social_feeds"
+    },
+    {
+      "type": "boolean",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "true",
+      "generated": null,
+      "identity": null,
+      "name": "show_on_site",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "social_feeds"
+    },
+    {
+      "type": "boolean",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "true",
+      "generated": null,
+      "identity": null,
+      "name": "auto_sync",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "social_feeds"
+    },
+    {
+      "type": "smallint",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "6",
+      "generated": null,
+      "identity": null,
+      "name": "sync_every_hours",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "social_feeds"
+    },
+    {
+      "type": "smallint",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "12",
+      "generated": null,
+      "identity": null,
+      "name": "max_posts",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "social_feeds"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "'newest'",
+      "generated": null,
+      "identity": null,
+      "name": "arrangement",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "social_feeds"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "last_synced_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "social_feeds"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "last_sync_count",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "social_feeds"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "last_sync_error",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "social_feeds"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "social_feeds"
+    },
+    {
+      "type": "serial",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "youtube_channels"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "channel_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "youtube_channels"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "handle",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "youtube_channels"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "title",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "youtube_channels"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "label",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "youtube_channels"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "thumbnail_url",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "youtube_channels"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "subscriber_count",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "youtube_channels"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "video_count",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "youtube_channels"
+    },
+    {
+      "type": "jsonb",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "'[\"videos\",\"live\"]'",
+      "generated": null,
+      "identity": null,
+      "name": "include",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "youtube_channels"
+    },
+    {
+      "type": "smallint",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "6",
+      "generated": null,
+      "identity": null,
+      "name": "max_videos",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "youtube_channels"
+    },
+    {
+      "type": "boolean",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "true",
+      "generated": null,
+      "identity": null,
+      "name": "is_active",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "youtube_channels"
+    },
+    {
+      "type": "smallint",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "0",
+      "generated": null,
+      "identity": null,
+      "name": "sort_order",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "youtube_channels"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "last_synced_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "youtube_channels"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "last_sync_count",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "youtube_channels"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "last_sync_error",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "youtube_channels"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "youtube_channels"
+    },
+    {
       "type": "serial",
       "typeSchema": null,
       "notNull": true,
@@ -1006,6 +1356,32 @@
       "generated": null,
       "identity": null,
       "name": "is_hidden",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "social_posts"
+    },
+    {
+      "type": "boolean",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "false",
+      "generated": null,
+      "identity": null,
+      "name": "is_pinned",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "social_posts"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "source_id",
       "entityType": "columns",
       "schema": "public",
       "table": "social_posts"
@@ -2930,6 +3306,26 @@
     },
     {
       "columns": [
+        "platform"
+      ],
+      "nameExplicit": false,
+      "name": "social_feeds_pkey",
+      "schema": "public",
+      "table": "social_feeds",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "youtube_channels_pkey",
+      "schema": "public",
+      "table": "youtube_channels",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
         "id"
       ],
       "nameExplicit": false,
@@ -3096,6 +3492,17 @@
     {
       "nameExplicit": false,
       "columns": [
+        "channel_id"
+      ],
+      "nullsNotDistinct": false,
+      "name": "youtube_channels_channel_id_key",
+      "schema": "public",
+      "table": "youtube_channels",
+      "entityType": "uniques"
+    },
+    {
+      "nameExplicit": false,
+      "columns": [
         "phone"
       ],
       "nullsNotDistinct": false,
@@ -3105,5 +3512,9 @@
       "entityType": "uniques"
     }
   ],
-  "renames": []
+  "renames": [
+    "public.site_settings.studio_gallery->public.site_settings.gallery",
+    "public.site_settings.studio_intro->public.site_settings.kirtan_intro",
+    "public.site_settings.studio_address->public.site_settings.address"
+  ]
 }

@@ -155,7 +155,7 @@ export function SocialFeedSection({ s }: { s?: SiteSettings }) {
             {data?.map((p) => (
               <article
                 key={p.id}
-                className="group overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] transition hover:border-gold/50"
+                className="group flex flex-col overflow-hidden rounded-2xl border border-gold/30 bg-white shadow-lg shadow-black/25 transition duration-300 hover:-translate-y-1 hover:border-gold hover:shadow-2xl hover:shadow-gold/10"
               >
                 <div
                   className={cn(
@@ -203,36 +203,36 @@ export function SocialFeedSection({ s }: { s?: SiteSettings }) {
                   href={p.permalink}
                   target="_blank"
                   rel="noreferrer"
-                  className="block p-4"
+                  className="flex flex-1 flex-col p-4 sm:p-5"
                 >
                   <p
                     className={cn(
-                      "text-sm text-cream/90",
+                      "text-sm font-semibold text-navy transition-colors duration-200 group-hover:text-primary leading-snug",
                       tab === "youtube"
-                        ? "line-clamp-2 font-medium"
+                        ? "line-clamp-2"
                         : "line-clamp-3",
                     )}
                   >
                     {p.caption}
                   </p>
                   {!channel && channels.length > 1 && p.sourceId && (
-                    <p className="mt-1 truncate text-xs text-gold-light/80">
+                    <p className="mt-1.5 truncate text-xs font-medium text-primary">
                       {channelName.get(p.sourceId)}
                     </p>
                   )}
-                  <div className="mt-3 flex items-center gap-4 text-xs text-cream/50">
+                  <div className="mt-auto flex items-center gap-3.5 pt-3 border-t border-border/60 text-xs text-muted-foreground">
                     <span>{formatDate(p.publishedAt)}</span>
                     {p.stats.views !== undefined && (
                       <span>{compact(p.stats.views)} views</span>
                     )}
                     {p.stats.likes !== undefined && (
-                      <span className="inline-flex items-center gap-1">
-                        <Heart className="size-3" /> {compact(p.stats.likes)}
+                      <span className="inline-flex items-center gap-1 transition-colors group-hover:text-primary">
+                        <Heart className="size-3 text-primary/70" /> {compact(p.stats.likes)}
                       </span>
                     )}
                     {p.stats.comments !== undefined && (
-                      <span className="inline-flex items-center gap-1">
-                        <MessageCircle className="size-3" />{" "}
+                      <span className="inline-flex items-center gap-1 transition-colors group-hover:text-primary">
+                        <MessageCircle className="size-3 text-primary/70" />{" "}
                         {compact(p.stats.comments)}
                       </span>
                     )}
