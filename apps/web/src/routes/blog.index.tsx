@@ -6,8 +6,10 @@ import {
   blogListQuery,
 } from "@/components/landing/blog-preview-section";
 import { PublicLayout } from "@/components/layout/public-layout";
+import { siteSettingsQuery } from "@/hooks/use-site-settings";
 
 export const Route = createFileRoute("/blog/")({
+  loader: ({ context }) => context.queryClient.prefetchQuery(siteSettingsQuery),
   component: BlogIndex,
 });
 

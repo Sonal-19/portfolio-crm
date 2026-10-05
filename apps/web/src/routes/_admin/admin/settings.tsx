@@ -10,6 +10,7 @@ import {
   isHeroTrackValid,
 } from "@/components/admin/hero-music-card";
 import { ImageUpload } from "@/components/admin/image-upload";
+import { QuickBookingCard } from "@/components/admin/quick-booking-card";
 import { Field } from "@/components/common/field";
 import { ErrorState, PageLoader } from "@/components/common/states";
 import { Button } from "@/components/ui/button";
@@ -188,6 +189,11 @@ function SettingsPage() {
             </Field>
           </div>
         </Card>
+
+        <QuickBookingCard
+          value={f.quickBooking}
+          onChange={(v) => set("quickBooking", v)}
+        />
 
         <Card className="gap-4 p-5">
           <h2 className="font-semibold text-navy">Social & streaming links</h2>

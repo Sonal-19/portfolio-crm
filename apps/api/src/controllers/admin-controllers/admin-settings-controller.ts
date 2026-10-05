@@ -1,13 +1,19 @@
 import { eq } from "drizzle-orm";
 import Elysia, { t } from "elysia";
 import { db } from "$/db";
-import { adminsTable, galleryIcons, siteSettingsTable } from "$/db/schema";
+import {
+  adminsTable,
+  galleryIcons,
+  quickBookingChannels,
+  quickBookingModes,
+  siteSettingsTable,
+} from "$/db/schema";
 import {
   storageService,
   type UploadFolder,
   uploadFolders,
 } from "$/lib/services/storage-service";
-import { fail, ok, youtubeId } from "$/lib/utils";
+import { fail, normalizePhone, ok, youtubeId } from "$/lib/utils";
 import { tEnum } from "$/lib/utils/schema";
 import { protectedAdmin } from "$/pre-processor";
 
@@ -29,6 +35,29 @@ export const adminSettingsController = new Elysia({
           400,
           fail("Hero music must be a YouTube or YouTube Music link"),
         );
+      }
+      const { quickBooking } = body;
+      if (quickBooking) {
+        quickBooking.contacts = quickBooking.contacts.map((c) => ({
+          ...c,
+          number: normalizePhone(c.number),
+        }));
+        const bad = quickBooking.contacts.find((c) => c.number.length < 10);
+        if (bad) {
+          return status(
+            400,
+            fail(`"${bad.label || "Contact"}" needs a full WhatsApp number`),
+          );
+        }
+        if (
+          quickBooking.enabled &&
+          !quickBooking.contacts.some((c) => c.isActive)
+        ) {
+          return status(
+            400,
+            fail("Turn on at least one number before showing the Book button"),
+          );
+        }
       }
       const [row] = await db
         .update(siteSettingsTable)
@@ -77,6 +106,24 @@ export const adminSettingsController = new Elysia({
             views: t.String(),
             years: t.String(),
             albums: t.String(),
+          }),
+        ),
+        quickBooking: t.Optional(
+          t.Object({
+            enabled: t.Boolean(),
+            channel: tEnum(quickBookingChannels),
+            label: t.String({ minLength: 1, maxLength: 40 }),
+            message: t.String({ minLength: 1, maxLength: 500 }),
+            mode: tEnum(quickBookingModes),
+            contacts: t.Array(
+              t.Object({
+                id: t.String({ minLength: 1, maxLength: 40 }),
+                label: t.String({ maxLength: 60 }),
+                number: t.String({ minLength: 1, maxLength: 20 }),
+                isActive: t.Boolean(),
+              }),
+              { maxItems: 10 },
+            ),
           }),
         ),
       }),

@@ -25,6 +25,46 @@ export type SiteStats = {
   albums: string;
 };
 
+/** Channels the floating "Book Kirtan" button can hand off to. Only
+ * WhatsApp is wired today; email (SMTP) etc. slot in here later. */
+export const quickBookingChannels = ["whatsapp"] as const;
+export type QuickBookingChannel = (typeof quickBookingChannels)[number];
+
+/** `choose` = visitor picks from the active numbers, `rotate` = a random
+ * active number is used so chats spread across the team. */
+export const quickBookingModes = ["choose", "rotate"] as const;
+export type QuickBookingMode = (typeof quickBookingModes)[number];
+
+export type QuickBookingContact = {
+  id: string;
+  /** Shown to visitors when they choose, e.g. "Bhai Sahib's office". */
+  label: string;
+  /** Digits with country code, e.g. 919876543210. */
+  number: string;
+  isActive: boolean;
+};
+
+/** Floating "Book Kirtan" button on the public site. */
+export type QuickBooking = {
+  enabled: boolean;
+  channel: QuickBookingChannel;
+  label: string;
+  /** Prefilled chat text; the visitor only has to press send. */
+  message: string;
+  mode: QuickBookingMode;
+  contacts: QuickBookingContact[];
+};
+
+export const quickBookingDefault: QuickBooking = {
+  enabled: false,
+  channel: "whatsapp",
+  label: "Book Kirtan",
+  message:
+    "Waheguru Ji Ka Khalsa, Waheguru Ji Ki Fateh 🙏 I want to book a kirtan program.",
+  mode: "choose",
+  contacts: [],
+};
+
 /** Single-row table (id = 1) holding everything the public site renders
  * that the admin can edit without a deploy. */
 export const siteSettingsTable = pgTable("site_settings", (pg) => ({
@@ -57,6 +97,11 @@ export const siteSettingsTable = pgTable("site_settings", (pg) => ({
   appleMusicUrl: pg.text("apple_music_url"),
   whatsappChannelUrl: pg.text("whatsapp_channel_url"),
   stats: pg.jsonb().$type<SiteStats>().notNull(),
+  quickBooking: pg
+    .jsonb("quick_booking")
+    .$type<QuickBooking>()
+    .notNull()
+    .default(quickBookingDefault),
   updatedAt: pg
     .timestamp("updated_at", { withTimezone: true })
     .defaultNow()

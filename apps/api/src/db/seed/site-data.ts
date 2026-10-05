@@ -56,6 +56,22 @@ export const siteSettingsSeed: InsertSiteSettings = {
   appleMusicUrl:
     "https://music.apple.com/in/search?term=Bhai%20Gurpreet%20Singh%20Shimla%20Wale",
   whatsappChannelUrl: "https://whatsapp.com/channel/",
+  quickBooking: {
+    enabled: true,
+    channel: "whatsapp",
+    label: "Book Kirtan",
+    message:
+      "Waheguru Ji Ka Khalsa, Waheguru Ji Ki Fateh 🙏 I want to book a kirtan program.",
+    mode: "choose",
+    contacts: [
+      {
+        id: "office",
+        label: "Amritvela Trust office",
+        number: "919876543210",
+        isActive: true,
+      },
+    ],
+  },
   stats: {
     followers: "94K+",
     views: "66 Lakh+",

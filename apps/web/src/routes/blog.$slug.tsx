@@ -8,10 +8,12 @@ import { Markdown } from "@/components/common/markdown";
 import { ErrorState, PageLoader } from "@/components/common/states";
 import { PublicLayout } from "@/components/layout/public-layout";
 import { Button } from "@/components/ui/button";
+import { siteSettingsQuery } from "@/hooks/use-site-settings";
 import { api, call } from "@/lib/api";
 import { copyToClipboard, formatDate } from "@/lib/utils";
 
 export const Route = createFileRoute("/blog/$slug")({
+  loader: ({ context }) => context.queryClient.prefetchQuery(siteSettingsQuery),
   component: BlogPost,
 });
 

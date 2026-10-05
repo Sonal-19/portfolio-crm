@@ -2,9 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Award, Landmark, Music2 } from "lucide-react";
 import { KirtanBookingForm } from "@/components/kirtan/kirtan-booking-form";
 import { PublicLayout } from "@/components/layout/public-layout";
-import { useSiteSettings } from "@/hooks/use-site-settings";
+import { siteSettingsQuery, useSiteSettings } from "@/hooks/use-site-settings";
 
 export const Route = createFileRoute("/kirtan/book")({
+  loader: ({ context }) => context.queryClient.prefetchQuery(siteSettingsQuery),
   component: BookKirtanPage,
 });
 

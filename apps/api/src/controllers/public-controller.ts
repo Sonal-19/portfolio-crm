@@ -35,7 +35,16 @@ export const publicController = new Elysia({
   .get("/site-settings", async ({ status }) => {
     const [row] = await db.select().from(siteSettingsTable).limit(1);
     if (!row) return status(404, fail("Site settings missing"));
-    return ok(row);
+    // Numbers the admin switched off never leave the server.
+    const contacts = row.quickBooking.contacts.filter((c) => c.isActive);
+    return ok({
+      ...row,
+      quickBooking: {
+        ...row.quickBooking,
+        enabled: row.quickBooking.enabled && contacts.length > 0,
+        contacts,
+      },
+    });
   })
   .get("/releases", async () => {
     const rows = await db
