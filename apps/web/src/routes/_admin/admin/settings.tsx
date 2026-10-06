@@ -19,6 +19,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { api, call } from "@/lib/api";
 
+// Hero music card is hidden for now (kept in code; flip to true to bring it back).
+const SHOW_HERO_MUSIC = false;
+
 export const Route = createFileRoute("/_admin/admin/settings")({
   component: SettingsPage,
 });
@@ -74,7 +77,7 @@ function SettingsPage() {
         actions={
           <Button
             onClick={() => {
-              if (!isHeroTrackValid(f.heroTrackUrl)) {
+              if (SHOW_HERO_MUSIC && !isHeroTrackValid(f.heroTrackUrl)) {
                 toast.error("Fix the hero music link before saving");
                 return;
               }
@@ -150,10 +153,12 @@ function SettingsPage() {
           </div>
         </Card>
 
-        <HeroMusicCard
-          value={f}
-          onChange={(patch) => setF({ ...f, ...patch })}
-        />
+        {SHOW_HERO_MUSIC && (
+          <HeroMusicCard
+            value={f}
+            onChange={(patch) => setF({ ...f, ...patch })}
+          />
+        )}
 
         <GalleryEditor
           items={f.gallery}

@@ -53,22 +53,32 @@ function Kpi({
   to?: string;
 }) {
   const body = (
-    <Card className="flex-row items-center gap-4 p-4 transition hover:shadow-md">
+    <Card className="h-full flex-col items-start gap-2.5 p-3.5 transition hover:shadow-md sm:flex-row sm:items-center sm:gap-4 sm:p-4">
       <div
         className={cn(
-          "grid size-11 shrink-0 place-items-center rounded-xl",
+          "grid size-9 shrink-0 place-items-center rounded-xl sm:size-11",
           tone,
         )}
       >
-        <Icon className="size-5" />
+        <Icon className="size-4.5 sm:size-5" />
       </div>
       <div className="min-w-0">
-        <p className="text-2xl font-semibold text-navy">{value}</p>
-        <p className="truncate text-xs text-muted-foreground">{label}</p>
+        <p className="text-xl font-semibold leading-tight text-navy sm:text-2xl">
+          {value}
+        </p>
+        <p className="text-xs leading-snug text-muted-foreground sm:truncate">
+          {label}
+        </p>
       </div>
     </Card>
   );
-  return to ? <Link to={to}>{body}</Link> : body;
+  return to ? (
+    <Link to={to} className="block h-full">
+      {body}
+    </Link>
+  ) : (
+    body
+  );
 }
 
 function Dashboard() {
@@ -95,7 +105,7 @@ function Dashboard() {
           year: "numeric",
         })}
       />
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
+      <div className="grid grid-cols-2 gap-2.5 sm:gap-3 md:grid-cols-3 xl:grid-cols-6">
         <Kpi
           label="New leads this week"
           value={kpis.newLeadsWeek}
@@ -139,10 +149,10 @@ function Dashboard() {
         />
       </div>
 
-      <div className="mt-6 grid gap-6 xl:grid-cols-3">
+      <div className="mt-5 grid grid-cols-1 gap-4 sm:mt-6 sm:gap-6 xl:grid-cols-3">
         {/* Follow-ups due */}
         <Card className="gap-0 p-0 xl:col-span-2">
-          <div className="flex items-center justify-between border-b px-5 py-4">
+          <div className="flex items-center justify-between gap-3 border-b px-4 py-3.5 sm:px-5 sm:py-4">
             <h2 className="font-semibold text-navy">Due today & overdue</h2>
             <Link
               to="/admin/calendar"
@@ -160,30 +170,34 @@ function Dashboard() {
                 return (
                   <li
                     key={f.id}
-                    className="flex flex-wrap items-center gap-3 px-5 py-3"
+                    className="flex items-start gap-3 px-4 py-3 sm:items-center sm:px-5"
                   >
-                    <div className="min-w-0 flex-1">
-                      <Link
-                        to="/admin/leads/$id"
-                        params={{ id: String(f.leadId) }}
-                        className="font-medium text-navy hover:text-primary"
-                      >
-                        {f.leadName}
-                      </Link>
-                      <p className="truncate text-sm text-muted-foreground">
-                        {f.title}
-                      </p>
+                    <div className="min-w-0 flex-1 sm:flex sm:items-center sm:gap-3">
+                      <div className="min-w-0 sm:flex-1">
+                        <Link
+                          to="/admin/leads/$id"
+                          params={{ id: String(f.leadId) }}
+                          className="line-clamp-2 font-medium text-navy hover:text-primary"
+                        >
+                          {f.leadName}
+                        </Link>
+                        <p className="truncate text-sm text-muted-foreground">
+                          {f.title}
+                        </p>
+                      </div>
+                      <div className="mt-1.5 flex flex-wrap gap-1.5 sm:mt-0 sm:shrink-0">
+                        <Pill tone={overdue ? "red" : "amber"}>
+                          {overdue
+                            ? `Overdue · ${relativeTime(f.dueAt)}`
+                            : formatTime(f.dueAt)}
+                        </Pill>
+                        <Pill tone="navy">{titleCase(f.type)}</Pill>
+                      </div>
                     </div>
-                    <Pill tone={overdue ? "red" : "amber"}>
-                      {overdue
-                        ? `Overdue · ${relativeTime(f.dueAt)}`
-                        : formatTime(f.dueAt)}
-                    </Pill>
-                    <Pill tone="navy">{titleCase(f.type)}</Pill>
-                    <div className="flex gap-1">
+                    <div className="flex shrink-0 gap-1">
                       <a
                         href={`tel:+${f.leadPhone}`}
-                        className="grid size-8 place-items-center rounded-md border hover:bg-muted"
+                        className="grid size-9 place-items-center rounded-md border hover:bg-muted sm:size-8"
                         title="Call"
                       >
                         <Phone className="size-4" />
@@ -195,7 +209,7 @@ function Dashboard() {
                         )}
                         target="_blank"
                         rel="noreferrer"
-                        className="grid size-8 place-items-center rounded-md border text-[#25D366] hover:bg-muted"
+                        className="grid size-9 place-items-center rounded-md border text-[#25D366] hover:bg-muted sm:size-8"
                         title="WhatsApp"
                       >
                         <FaWhatsapp className="size-4" />
@@ -209,7 +223,7 @@ function Dashboard() {
         </Card>
 
         {/* Lead sources */}
-        <Card className="p-5">
+        <Card className="p-4 sm:p-5">
           <h2 className="font-semibold text-navy">Leads by source</h2>
           <p className="-mt-4 text-xs text-muted-foreground">
             {kpis.totalLeads} total · {kpis.completedRate}% completed
@@ -254,7 +268,7 @@ function Dashboard() {
 
         {/* Upcoming programs */}
         <Card className="gap-0 p-0 xl:col-span-2">
-          <div className="flex items-center justify-between border-b px-5 py-4">
+          <div className="flex items-center justify-between gap-3 border-b px-4 py-3.5 sm:px-5 sm:py-4">
             <h2 className="font-semibold text-navy">
               Upcoming kirtan programs
             </h2>
@@ -274,7 +288,7 @@ function Dashboard() {
                   <Link
                     to="/admin/kirtan-bookings"
                     search={{ id: b.id }}
-                    className="flex items-center gap-3 px-5 py-3 hover:bg-muted/40"
+                    className="flex items-center gap-3 px-4 py-3 hover:bg-muted/40 sm:px-5"
                   >
                     <div className="grid size-10 shrink-0 place-items-center rounded-lg bg-orange-50 text-orange-600">
                       <HandHeart className="size-5" />
@@ -284,8 +298,11 @@ function Dashboard() {
                       <p className="truncate text-sm text-muted-foreground">
                         {eventLabel(b.eventType)} · {b.city}
                       </p>
+                      <p className="mt-0.5 text-xs font-medium text-navy sm:hidden">
+                        {formatDateTime(b.scheduledStart)}
+                      </p>
                     </div>
-                    <p className="shrink-0 text-right text-sm">
+                    <p className="hidden shrink-0 text-right text-sm sm:block">
                       {formatDateTime(b.scheduledStart)}
                     </p>
                   </Link>
@@ -297,12 +314,12 @@ function Dashboard() {
 
         {/* Activity */}
         <Card className="gap-0 p-0">
-          <div className="border-b px-5 py-4">
+          <div className="border-b px-4 py-3.5 sm:px-5 sm:py-4">
             <h2 className="font-semibold text-navy">Recent activity</h2>
           </div>
           <ul className="max-h-96 divide-y overflow-y-auto">
             {data.recentActivity.map((a) => (
-              <li key={a.id} className="px-5 py-3 text-sm">
+              <li key={a.id} className="px-4 py-3 text-sm sm:px-5">
                 <Link
                   to="/admin/leads/$id"
                   params={{ id: String(a.leadId) }}

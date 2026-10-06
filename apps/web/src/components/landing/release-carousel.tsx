@@ -11,7 +11,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { api, call } from "@/lib/api";
 import { PLATFORM_META, type ReleasePlatform } from "@/lib/releases";
 import { cn, ymd } from "@/lib/utils";
@@ -77,13 +77,14 @@ export function PlatformButton({
       title={`Listen on ${meta.label}`}
       aria-label={`Open on ${meta.label}`}
       onClick={(e) => e.stopPropagation()}
-      className="group/plat pointer-events-auto relative flex h-7.5 sm:h-8 items-center gap-1.5 rounded-full border border-white/15 bg-black/60 px-2.5 sm:px-3 text-[11px] sm:text-xs font-medium text-cream backdrop-blur-md transition-all duration-300 hover:scale-105 hover:border-gold/80 hover:bg-black/85 active:scale-95 shadow-sm"
+      className="group/plat pointer-events-auto relative flex size-9 sm:size-auto sm:h-8 items-center justify-center gap-1.5 rounded-full border border-white/15 bg-black/60 sm:px-3 text-[11px] sm:text-xs font-medium text-cream backdrop-blur-md transition-all duration-300 hover:scale-105 hover:border-gold/80 hover:bg-black/85 active:scale-95 shadow-sm"
     >
       <Icon
-        className="size-3.5 shrink-0 transition-transform duration-300 group-hover/plat:scale-110"
+        className="size-4 sm:size-3.5 shrink-0 transition-transform duration-300 group-hover/plat:scale-110"
         style={{ color: meta.color }}
       />
-      <span className="text-cream/90">{meta.label}</span>
+      {/* Icon-only on phones; the label comes back from sm up */}
+      <span className="hidden sm:inline text-cream/90">{meta.label}</span>
     </a>
   );
 }
@@ -164,11 +165,17 @@ export function ReleaseCard({
 
 /** 3D Perspective Coverflow Carousel with large, unshadowed poster artwork,
  * responsive mobile swipe, side angle tilts, and compact metadata card. */
-export function ReleaseCarousel() {
+export function ReleaseCarousel({
+  onActiveChange,
+}: {
+  /** Fires with the release currently in front (used to tint the hero). */
+  onActiveChange?: (release: ReleaseCardData) => void;
+} = {}) {
   const { data } = useQuery(releasesQuery);
   const reduceMotion = useReducedMotion();
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const touchStartX = useRef(0);
   const [windowWidth, setWindowWidth] = useState(
     typeof window !== "undefined" ? window.innerWidth : 1200,
   );
@@ -182,6 +189,11 @@ export function ReleaseCarousel() {
   const items = (data ?? []) as ReleaseCardData[];
   const isMobile = windowWidth < 640;
   const isTablet = windowWidth >= 640 && windowWidth < 1024;
+
+  // const current = items[activeIndex];
+  // useEffect(() => {
+  //   if (current) onActiveChange?.(current);
+  // }, [current, onActiveChange]);
 
   const newest = useMemo(() => {
     let best: { i: number; d: string } | null = null;
@@ -207,7 +219,7 @@ export function ReleaseCarousel() {
     if (isPaused || items.length <= 1 || reduceMotion) return;
     const interval = setInterval(() => {
       setActiveIndex((prev) => (prev + 1) % items.length);
-    }, 5000);
+    }, 2000);
     return () => clearInterval(interval);
   }, [isPaused, items.length, reduceMotion]);
 
@@ -289,15 +301,14 @@ export function ReleaseCarousel() {
   };
 
   // Touch swipe support
-  let touchStartX = 0;
   const onTouchStart = (e: React.TouchEvent) => {
     const t = e.touches[0];
-    if (t) touchStartX = t.clientX;
+    if (t) touchStartX.current = t.clientX;
   };
   const onTouchEnd = (e: React.TouchEvent) => {
     const t = e.changedTouches[0];
     if (!t) return;
-    const deltaX = t.clientX - touchStartX;
+    const deltaX = t.clientX - touchStartX.current;
     if (deltaX > 40) handlePrev();
     else if (deltaX < -40) handleNext();
   };
@@ -419,8 +430,8 @@ export function ReleaseCarousel() {
                     : "ring-1 ring-white/20 hover:ring-gold/50",
                   // Large responsive dimensions:
                   r.aspect === "wide"
-                    ? "w-[290px] h-[163px] sm:w-[480px] sm:h-[270px] lg:w-[620px] lg:h-[349px]"
-                    : "w-[210px] h-[210px] sm:w-[310px] sm:h-[310px] lg:w-[370px] lg:h-[370px]",
+                    ? "w-[320px] h-[220px] sm:w-[480px] sm:h-[270px] lg:w-[640px] lg:h-[359px]"
+                    : "w-[230px] h-[230px] sm:w-[310px] sm:h-[310px] lg:w-[380px] lg:h-[380px]",
                 )}
               >
                 {/* 100% CLEAN, UN-SHADOWED ARTWORK - ALL TEXT & DETAILS CRYSTAL CLEAR */}

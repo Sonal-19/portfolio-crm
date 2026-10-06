@@ -31,7 +31,7 @@ import { useState } from "react";
 import { FaWhatsapp } from "react-icons/fa6";
 import { toast } from "sonner";
 import { Field } from "@/components/common/field";
-import { NativeSelect } from "@/components/common/native-select";
+import { BrowserSelect } from "@/components/common/native-select";
 import { Spinner } from "@/components/common/states";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -567,7 +567,7 @@ export function KirtanBookingForm({ className }: { className?: string }) {
               </p>
             )}
             <Field label="Approx. duration" htmlFor="kdur">
-              <NativeSelect
+              <BrowserSelect
                 id="kdur"
                 className="h-9 w-full"
                 value={f.durationHours}
@@ -579,7 +579,7 @@ export function KirtanBookingForm({ className }: { className?: string }) {
                     {h === 6 ? " (half day)" : ""}
                   </option>
                 ))}
-              </NativeSelect>
+              </BrowserSelect>
             </Field>
             <Field
               label="Alternate date"
@@ -692,7 +692,7 @@ export function KirtanBookingForm({ className }: { className?: string }) {
             </Field>
             <div className="grid grid-cols-[1fr_7rem] gap-3">
               <Field label="State" htmlFor="kstate" required>
-                <NativeSelect
+                <BrowserSelect
                   id="kstate"
                   className="w-full"
                   value={f.state}
@@ -701,7 +701,7 @@ export function KirtanBookingForm({ className }: { className?: string }) {
                   {STATES.map((st) => (
                     <option key={st}>{st}</option>
                   ))}
-                </NativeSelect>
+                </BrowserSelect>
               </Field>
               <Field label="Pincode" htmlFor="kpin">
                 <Input
@@ -754,7 +754,7 @@ export function KirtanBookingForm({ className }: { className?: string }) {
               />
             </Field>
             <Field label="How did you hear about us?" htmlFor="kref">
-              <NativeSelect
+              <BrowserSelect
                 id="kref"
                 className="w-full"
                 value={f.referralSource}
@@ -764,7 +764,7 @@ export function KirtanBookingForm({ className }: { className?: string }) {
                 {REFERRALS.map((r) => (
                   <option key={r}>{r}</option>
                 ))}
-              </NativeSelect>
+              </BrowserSelect>
             </Field>
           </div>
         </div>
